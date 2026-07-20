@@ -1,0 +1,64 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">BitGroove logo</title>
+  <desc id="desc">A square BitGroove logo with a stylized B formed from three audit lenses for experience, engineering, and security proof.</desc>
+  <defs>
+    <linearGradient id="panel" x1="128" y1="92" x2="894" y2="928" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#111823"/>
+      <stop offset="0.55" stop-color="#0A0D12"/>
+      <stop offset="1" stop-color="#05070B"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="304" y1="178" x2="708" y2="640" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5FAFF"/>
+      <stop offset="0.5" stop-color="#9FE8FF"/>
+      <stop offset="1" stop-color="#D9A15B"/>
+    </linearGradient>
+    <linearGradient id="glassTop" x1="406" y1="224" x2="668" y2="392" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#233142"/>
+      <stop offset="1" stop-color="#0D141C"/>
+    </linearGradient>
+    <linearGradient id="glassBottom" x1="406" y1="434" x2="708" y2="634" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1F2E3B"/>
+      <stop offset="1" stop-color="#0C1219"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" rx="164" fill="#0A0D12"/>
+  <rect x="48" y="48" width="928" height="928" rx="128" fill="url(#panel)" stroke="#FFFFFF" stroke-opacity="0.11" stroke-width="2"/>
+
+  <g opacity="0.26" stroke="#E7ECF2" stroke-width="2">
+    <path d="M196 294H828"/>
+    <path d="M196 416H828"/>
+    <path d="M196 538H828"/>
+    <path d="M318 174V660"/>
+    <path d="M512 150V682"/>
+    <path d="M706 174V660"/>
+  </g>
+
+  <g>
+    <path d="M330 646V214C330 195.222 345.222 180 364 180H530C619.47 180 688 234.92 688 312C688 364.39 657.77 407.268 609.793 429.44C674.957 448.611 720 495.712 720 562C720 642.421 649.948 698 552 698H382C353.281 698 330 674.719 330 646Z" fill="#111923" stroke="url(#mark)" stroke-width="12" stroke-linejoin="round"/>
+    <path d="M414 250H526C575.706 250 612 278.359 612 318C612 358.819 575.882 388 524 388H414V250Z" fill="url(#glassTop)" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M414 462H552C605.4 462 644 492.297 644 535C644 579.284 606.312 610 550 610H414V462Z" fill="url(#glassBottom)" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="6" stroke-linejoin="round"/>
+    <rect x="350" y="216" width="72" height="430" rx="28" fill="#E7ECF2" fill-opacity="0.09"/>
+  </g>
+
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M454 326L490 358L556 284" stroke="#4ADE80" stroke-width="22"/>
+    <path d="M454 326L490 358L556 284" stroke="#DFFFF0" stroke-opacity="0.38" stroke-width="8"/>
+    <path d="M456 514H540M456 556H590M540 514V486M590 556V594M608 536H646" stroke="#9FE8FF" stroke-width="15"/>
+    <path d="M456 514H540M456 556H590M540 514V486M590 556V594M608 536H646" stroke="#F4FAFF" stroke-opacity="0.26" stroke-width="5"/>
+    <circle cx="646" cy="536" r="15" fill="#D9A15B"/>
+    <circle cx="646" cy="536" r="7" fill="#FFE2B4"/>
+    <path d="M489 636C528 665 582 665 621 636C604 622 596 606 596 586V536H514V586C514 606 506 622 489 636Z" stroke="#F4FAFF" stroke-opacity="0.88" stroke-width="11"/>
+    <path d="M472 432C529 394 613 411 648 470" stroke="#9FE8FF" stroke-opacity="0.72" stroke-width="10"/>
+  </g>
+
+  <g stroke-linecap="round">
+    <path d="M314 250H254C229.147 250 209 270.147 209 295V326" stroke="#9FE8FF" stroke-width="8"/>
+    <path d="M706 614H768C792.853 614 813 593.853 813 569V538" stroke="#D9A15B" stroke-width="8"/>
+    <circle cx="254" cy="250" r="14" fill="#9FE8FF"/>
+    <circle cx="768" cy="614" r="14" fill="#D9A15B"/>
+  </g>
+
+  <text x="512" y="812" text-anchor="middle" fill="#E7ECF2" font-family="Arial, Helvetica, sans-serif" font-size="88" font-weight="700">BitGroove</text>
+  <text x="512" y="864" text-anchor="middle" fill="#9FE8FF" font-family="Courier New, monospace" font-size="25" font-weight="700">PROOF BEFORE RELEASE</text>
+</svg>
