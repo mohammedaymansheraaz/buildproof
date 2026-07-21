@@ -11,19 +11,24 @@ const briefSchema = z.object({
 
 async function requireAuthenticatedApiUser() {
   const userId = await getAuthenticatedUserId();
-  if (userId) return null;
-  return NextResponse.json({ error: "Authentication is required to use AI-assisted audit intelligence." }, { status: 401 });
+  if (userId) return { userId };
+  return {
+    response: NextResponse.json(
+      { error: "Authentication is required to use AI-assisted audit intelligence." },
+      { status: 401 },
+    ),
+  };
 }
 
 export async function GET() {
-  const denied = await requireAuthenticatedApiUser();
-  if (denied) return denied;
-  return NextResponse.json(getAiProviderStatus());
+  const auth = await requireAuthenticatedApiUser();
+  if ("response" in auth) return auth.response;
+  return NextResponse.json(await getAiProviderStatus(auth.userId));
 }
 
 export async function POST(request: Request) {
-  const denied = await requireAuthenticatedApiUser();
-  if (denied) return denied;
+  const auth = await requireAuthenticatedApiUser();
+  if ("response" in auth) return auth.response;
 
   const parsed = briefSchema.safeParse(await request.json().catch(() => undefined));
   if (!parsed.success) {
@@ -31,7 +36,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    return NextResponse.json(await generateAiBrief(parsed.data));
+    return NextResponse.json(await generateAiBrief(parsed.data, { userId: auth.userId }));
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "AI brief could not be generated." },

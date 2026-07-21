@@ -57,6 +57,32 @@ const wizardSteps = [
   { number: 3, label: "Approve plan" },
 ];
 
+type TargetMode = "url" | "repo" | "both";
+
+const targetModeOptions = [
+  {
+    mode: "url",
+    label: "URL only",
+    title: "Inspect the running app",
+    detail: "Best when you have a deployed preview or staging link but no repository access.",
+    proof: "browser · accessibility · performance · passive HTTP",
+  },
+  {
+    mode: "repo",
+    label: "GitHub repo only",
+    title: "Inspect the source",
+    detail: "Best when the app is not deployed yet, but you want code, dependency, CI/CD, and architecture review.",
+    proof: "source map · dependencies · CI/CD · config",
+  },
+  {
+    mode: "both",
+    label: "URL + GitHub",
+    title: "Fullest MVP coverage",
+    detail: "Best evidence: compare the live app behavior with the source, workflow, and security surface.",
+    proof: "running app + source intelligence",
+  },
+] satisfies Array<{ mode: TargetMode; label: string; title: string; detail: string; proof: string }>;
+
 const domainIcons = {
   product: FileSearch,
   experience: MousePointer2,
@@ -114,14 +140,14 @@ function getRepositoryStatusLabel(inspection: RepositoryInspection | null, state
   if (hasRepositorySourceEvidence(inspection)) return "Repository evidence connected";
   if (inspection?.status === "public_metadata" || inspection?.sourceCoverage === "metadata_only") return "Public metadata connected";
   if (inspection?.status === "needs_connection") return "Connection required for source evidence";
-  return hasRepositorySource ? "Ready to inspect this repository" : "Optional source coverage";
+  return hasRepositorySource ? "Ready to inspect optional source" : "Optional source evidence";
 }
 
 function getCoverageTitle(inspection: RepositoryInspection | null, hasRepositorySource: boolean) {
   if (hasRepositorySourceEvidence(inspection)) return "Repository evidence is ready for the scoped audit.";
   if (inspection?.status === "public_metadata" || inspection?.sourceCoverage === "metadata_only") return "Only public repository metadata is available.";
   if (inspection?.status === "needs_connection") return "Repository source needs an approved server-side connection.";
-  return hasRepositorySource ? "Inspect the repository to establish its evidence boundary." : "Staging-only audit selected.";
+  return hasRepositorySource ? "Inspect the repository to establish its evidence boundary." : "Repository evidence is optional and not connected.";
 }
 
 function getCoverageDescription(inspection: RepositoryInspection | null) {
@@ -137,21 +163,57 @@ export function AuditWizard() {
   const { createAudit } = useAudit();
   const [step, setStep] = useState(1);
   const [draft, setDraft] = useState<AuditDraft>(emptyDraft);
+  const [targetMode, setTargetMode] = useState<TargetMode>("both");
   const [authorized, setAuthorized] = useState(false);
   const [showIssues, setShowIssues] = useState(false);
   const [repositoryInspection, setRepositoryInspection] = useState<RepositoryInspection | null>(null);
   const [repositoryInspectionState, setRepositoryInspectionState] = useState<RepositoryInspectionState>("idle");
   const [repositoryInspectionError, setRepositoryInspectionError] = useState<string | null>(null);
+  const [launching, setLaunching] = useState(false);
+  const [launchError, setLaunchError] = useState<string | null>(null);
   const inspectionRequestId = useRef(0);
   const inspectionAbortController = useRef<AbortController | null>(null);
 
-  const readyToConnect = Boolean(draft.projectName.trim() && draft.stagingUrl.trim() && draft.productIntent.trim());
+  const hasRepositorySource = Boolean(draft.repositoryUrl.trim());
+  const hasStagingTarget = Boolean(draft.stagingUrl.trim());
+  const requiresStagingTarget = targetMode !== "repo";
+  const requiresRepositorySource = targetMode !== "url";
+  const readyToConnect = Boolean(
+    draft.projectName.trim() &&
+    draft.productIntent.trim() &&
+    (!requiresStagingTarget || hasStagingTarget) &&
+    (!requiresRepositorySource || hasRepositorySource),
+  );
   const selectedDomains = auditDomains.filter((domain) => domain.categories.some((category) => draft.selectedModules.includes(category)));
   const selectedCount = selectedDomains.length;
   const selectedJourneys = planJourneys.filter((journey) => selectedDomains.some((domain) => domain.id === journey.domainId));
-  const hasRepositorySource = Boolean(draft.repositoryUrl.trim());
   const repositoryStatus = getRepositoryStatusLabel(repositoryInspection, repositoryInspectionState, hasRepositorySource);
-  const repositoryInspectionComplete = repositoryInspectionState === "success" && Boolean(repositoryInspection);
+  const repositoryCoverageDescription = repositoryInspection
+    ? getCoverageDescription(repositoryInspection)
+    : "Repository evidence can inform source structure, dependencies, CI/CD, configuration, architecture, and security signals. A running app URL is still needed for browser journeys.";
+  const targetCoverageTitle = targetMode === "url"
+    ? "URL-only audit selected: live application evidence will drive this run."
+    : targetMode === "repo"
+      ? hasRepositorySource
+        ? getCoverageTitle(repositoryInspection, hasRepositorySource)
+        : "GitHub repo-only audit selected: source evidence is required."
+      : hasRepositorySource
+        ? getCoverageTitle(repositoryInspection, hasRepositorySource)
+        : "URL + GitHub selected: connect both targets for the strongest evidence.";
+  const targetCoverageDescription = targetMode === "url"
+    ? "BuildProof will inspect the reachable app surface first. Source, CI/CD, dependency, and architecture checks remain limited until a repository is added."
+    : targetMode === "repo"
+      ? hasRepositorySource
+        ? repositoryCoverageDescription
+        : "BuildProof can inspect source structure, dependencies, CI/CD, configuration, and security signals without a live app URL."
+      : hasRepositorySource
+        ? repositoryCoverageDescription
+        : "Both mode compares running-app behavior with repository evidence. Add the GitHub repo to unlock source, dependency, CI/CD, and architecture coverage.";
+  const missingTargetMessage = targetMode === "url"
+    ? "Add a project name, product intent, and an authorized staging or preview URL."
+    : targetMode === "repo"
+      ? "Add a project name, product intent, and a GitHub repository URL or owner/repository path."
+      : "Add a project name, product intent, authorized staging or preview URL, and GitHub repository.";
 
   function patchDraft<K extends keyof AuditDraft>(key: K, value: AuditDraft[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -177,7 +239,7 @@ export function AuditWizard() {
     if (!repositoryUrl) {
       setRepositoryInspection(null);
       setRepositoryInspectionState("error");
-      setRepositoryInspectionError("Enter a full GitHub repository URL, for example https://github.com/owner/repository.");
+      setRepositoryInspectionError("Enter a GitHub repository URL or owner/repository path before inspecting optional source evidence.");
       return;
     }
 
@@ -234,6 +296,7 @@ export function AuditWizard() {
 
   function useSample() {
     setDraft({ ...sampleDraft, selectedModules: [...sampleDraft.selectedModules] });
+    setTargetMode("both");
     resetRepositoryInspection();
     setAuthorized(false);
     setShowIssues(false);
@@ -252,20 +315,35 @@ export function AuditWizard() {
     setStep((current) => Math.min(3, current + 1));
   }
 
-  function launch() {
+  async function launch() {
     if (!authorized || !readyToConnect || !selectedCount) {
       setShowIssues(true);
       return;
     }
-    const id = createAudit(draft);
-    router.push(`/audits/${id}`);
+
+    setLaunching(true);
+    setLaunchError(null);
+    const scopedDraft: AuditDraft = {
+      ...draft,
+      repositoryUrl: requiresRepositorySource ? draft.repositoryUrl.trim() : "",
+      stagingUrl: requiresStagingTarget ? draft.stagingUrl.trim() : "",
+    };
+
+    try {
+      const id = await createAudit(scopedDraft);
+      router.push(`/audits/${id}`);
+    } catch (error) {
+      setLaunchError(error instanceof Error ? error.message : "BuildProof could not launch this audit.");
+    } finally {
+      setLaunching(false);
+    }
   }
 
   return (
     <div className="page page--wizard">
       <div className="page-heading page-heading--split">
         <div>
-          <div className="eyebrow"><span className="demo-chip">demo mode</span>Authorized release review</div>
+          <div className="eyebrow"><span className="demo-chip">safe MVP runner</span>Authorized release review</div>
           <h1>Build an audit around what your product must prove.</h1>
           <p>Connect the release surface, define the intent, and approve a scoped evidence plan.</p>
         </div>
@@ -285,111 +363,79 @@ export function AuditWizard() {
 
       {step === 1 ? (
         <div className="wizard-screen wizard-screen--connect">
-          <GlassPanel className="audit-dock" tone="focus">
-            <div className="audit-dock__rail" aria-hidden="true"><span /><span /></div>
-            <DockStation
-              number="01"
-              icon={<FolderGit2 size={21} />}
-              title="Repository"
-              status={repositoryStatus}
-              complete={repositoryInspectionComplete}
-            >
-              <label className="field-label">
-                Repository URL or path <small>recommended for source evidence</small>
-                <div className="field-shell">
-                  <FolderGit2 size={16} />
-                  <input
-                    value={draft.repositoryUrl}
-                    onChange={(event) => handleRepositoryUrlChange(event.target.value)}
-                    placeholder="https://github.com/your-org/your-app"
-                    autoComplete="off"
-                    inputMode="url"
-                    aria-describedby="repository-inspection-help"
-                  />
-                </div>
-              </label>
-              <div className="repository-inspection__actions">
-                <button
-                  type="button"
-                  className="button button--quiet repository-inspection__button"
-                  onClick={inspectRepository}
-                  disabled={repositoryInspectionState === "loading"}
-                  aria-describedby="repository-inspection-help"
-                >
-                  {repositoryInspectionState === "loading" ? <LoaderCircle size={15} className="repository-inspection__spinner" /> : repositoryInspection ? <RefreshCw size={15} /> : <FileSearch size={15} />}
-                  {repositoryInspectionState === "loading" ? "Inspecting…" : repositoryInspection ? "Refresh inspection" : "Inspect repository"}
-                </button>
-                <span id="repository-inspection-help">Reads repository metadata through the server. No credential is entered here.</span>
-              </div>
-              {repositoryInspectionState === "error" && repositoryInspectionError ? (
-                <div className="repository-inspection repository-inspection--error" role="alert">
-                  <CircleAlert size={16} />
-                  <p>{repositoryInspectionError}</p>
-                </div>
-              ) : null}
-              {repositoryInspection ? (
-                <div className="repository-inspection" aria-live="polite">
-                  <div className="repository-inspection__header">
-                    {hasRepositorySourceEvidence(repositoryInspection) ? <CheckCircle2 size={16} /> : <CircleAlert size={16} />}
-                    <div>
-                      <strong>{repositoryInspection.repository?.fullName ?? repositoryInspection.reference.canonicalUrl}</strong>
-                      <span>{hasRepositorySourceEvidence(repositoryInspection) ? "Repository evidence connected" : repositoryInspection.status === "public_metadata" || repositoryInspection.sourceCoverage === "metadata_only" ? "Public metadata only" : "Source connection required"}</span>
-                    </div>
-                  </div>
-                  {repositoryInspection.repository ? (
-                    <dl className="repository-inspection__summary">
-                      <div><dt>Branch</dt><dd>{repositoryInspection.repository.defaultBranch}</dd></div>
-                      <div><dt>Language</dt><dd>{repositoryInspection.signals.languages[0] ?? repositoryInspection.repository.primaryLanguage ?? "Not detected"}</dd></div>
-                      <div><dt>Package</dt><dd>{repositoryInspection.signals.packageManifest ? "package.json found" : "Not detected"}</dd></div>
-                      <div><dt>Workflows</dt><dd>{repositoryInspection.signals.workflows} {repositoryInspection.signals.workflows === 1 ? "workflow" : "workflows"}</dd></div>
-                    </dl>
-                  ) : null}
-                  {repositoryInspection.signals.languages.length > 1 ? (
-                    <div className="repository-inspection__languages" aria-label="Detected repository languages">
-                      {repositoryInspection.signals.languages.slice(0, 6).map((language) => <span key={language}>{language}</span>)}
-                    </div>
-                  ) : null}
-                  {repositoryInspection.limitation ? <p className="repository-inspection__limitation">{repositoryInspection.limitation}</p> : null}
-                </div>
-              ) : null}
-              <label className="field-label field-label--inline">
-                Branch
-                <div className="field-shell field-shell--compact"><input value={draft.branch} onChange={(event) => patchDraft("branch", event.target.value)} placeholder="main" /></div>
-              </label>
-            </DockStation>
+          <GlassPanel className="target-mode-panel" tone="mist">
+            <div className="target-mode-panel__heading">
+              <span className="panel-kicker">Audit target</span>
+              <h2>Choose what BuildProof can inspect.</h2>
+              <p>Different products are at different stages. Pick URL, GitHub repo, or both, and the evidence plan will match the access you actually have.</p>
+            </div>
+            <div className="target-mode-grid" role="radiogroup" aria-label="Choose audit target type">
+              {targetModeOptions.map((option) => {
+                const Icon = option.mode === "url" ? Link2 : option.mode === "repo" ? FolderGit2 : Sparkles;
+                const selected = targetMode === option.mode;
 
-            <DockStation
-              number="02"
-              icon={<Link2 size={21} />}
-              title="Running app"
-              status={draft.stagingUrl ? `${draft.environment} target` : "Awaiting target"}
-              complete={Boolean(draft.stagingUrl)}
-            >
-              <label className="field-label">
-                Authorized staging URL
-                <div className={cn("field-shell", showIssues && !draft.stagingUrl && "field-shell--error")}>
-                  <Link2 size={16} />
-                  <input value={draft.stagingUrl} onChange={(event) => patchDraft("stagingUrl", event.target.value)} placeholder="https://staging.your-app.com" inputMode="url" />
-                </div>
-              </label>
-              <div className="environment-options" role="radiogroup" aria-label="Target environment">
-                {(["staging", "preview", "production"] as const).map((environment) => (
+                return (
                   <button
                     type="button"
-                    key={environment}
-                    className={cn("environment-option", draft.environment === environment && "environment-option--selected")}
-                    onClick={() => patchDraft("environment", environment)}
+                    key={option.mode}
+                    className={cn("target-mode-card", selected && "target-mode-card--selected")}
+                    onClick={() => {
+                      setTargetMode(option.mode);
+                      setShowIssues(false);
+                      setLaunchError(null);
+                    }}
                     role="radio"
-                    aria-checked={draft.environment === environment}
+                    aria-checked={selected}
                   >
-                    {environment}
+                    <span className="target-mode-card__check">{selected ? <Check size={13} /> : null}</span>
+                    <span className="target-mode-card__icon"><Icon size={18} /></span>
+                    <span className="target-mode-card__label">{option.label}</span>
+                    <strong>{option.title}</strong>
+                    <small>{option.detail}</small>
+                    <em>{option.proof}</em>
                   </button>
-                ))}
-              </div>
-            </DockStation>
+                );
+              })}
+            </div>
+          </GlassPanel>
+
+          <GlassPanel className={cn("audit-dock", targetMode !== "both" && "audit-dock--two")} tone="focus">
+            <div className="audit-dock__rail" aria-hidden="true"><span /><span /></div>
+            {requiresStagingTarget ? (
+              <DockStation
+                number="01"
+                icon={<Link2 size={21} />}
+                title="Running app"
+                status={draft.stagingUrl ? `${draft.environment} target` : "Required target"}
+                complete={Boolean(draft.stagingUrl)}
+              >
+                <label className="field-label">
+                  Authorized staging URL <small>{targetMode === "both" ? "required for URL + GitHub mode" : "required for URL-only mode"}</small>
+                  <div className={cn("field-shell", showIssues && requiresStagingTarget && !hasStagingTarget && "field-shell--error")}>
+                    <Link2 size={16} />
+                    <input value={draft.stagingUrl} onChange={(event) => patchDraft("stagingUrl", event.target.value)} placeholder="https://staging.your-app.com" inputMode="url" />
+                  </div>
+                </label>
+                <div className="environment-options" role="radiogroup" aria-label="Target environment">
+                  {(["staging", "preview", "production"] as const).map((environment) => (
+                    <button
+                      type="button"
+                      key={environment}
+                      className={cn("environment-option", draft.environment === environment && "environment-option--selected")}
+                      onClick={() => patchDraft("environment", environment)}
+                      role="radio"
+                      aria-checked={draft.environment === environment}
+                    >
+                      {environment}
+                    </button>
+                  ))}
+                </div>
+              </DockStation>
+            ) : null}
 
             <DockStation
-              number="03"
+              className={targetMode === "repo" ? "dock-station--last" : undefined}
+              number="02"
               icon={<FileText size={21} />}
               title="Release intent"
               status={draft.productIntent ? "Intent captured" : "Tell us what must work"}
@@ -413,16 +459,90 @@ export function AuditWizard() {
                 </div>
               </label>
             </DockStation>
+
+            {requiresRepositorySource ? (
+              <DockStation
+                className={targetMode === "repo" ? "dock-station--source-first" : undefined}
+                number={targetMode === "repo" ? "01" : "03"}
+                icon={<FolderGit2 size={21} />}
+                title={targetMode === "repo" ? "GitHub repository" : "GitHub source"}
+                status={hasRepositorySource ? repositoryStatus : "Required source"}
+                complete={hasRepositorySource}
+              >
+                <label className="field-label">
+                  Repository URL or path <small>{targetMode === "repo" ? "required for repo-only mode" : "required for URL + GitHub mode"}</small>
+                  <div className={cn("field-shell", showIssues && requiresRepositorySource && !hasRepositorySource && "field-shell--error")}>
+                    <FolderGit2 size={16} />
+                    <input
+                      value={draft.repositoryUrl}
+                      onChange={(event) => handleRepositoryUrlChange(event.target.value)}
+                      placeholder="https://github.com/your-org/your-app or owner/repo"
+                      autoComplete="off"
+                      inputMode="url"
+                      aria-describedby="repository-inspection-help"
+                    />
+                  </div>
+                </label>
+                <div className="repository-inspection__actions">
+                  <button
+                    type="button"
+                    className="button button--quiet repository-inspection__button"
+                    onClick={inspectRepository}
+                    disabled={repositoryInspectionState === "loading" || !hasRepositorySource}
+                    aria-describedby="repository-inspection-help"
+                  >
+                    {repositoryInspectionState === "loading" ? <LoaderCircle size={15} className="repository-inspection__spinner" /> : repositoryInspection ? <RefreshCw size={15} /> : <FileSearch size={15} />}
+                    {repositoryInspectionState === "loading" ? "Inspecting…" : repositoryInspection ? "Refresh inspection" : "Inspect repository"}
+                  </button>
+                  <span id="repository-inspection-help">Preview source coverage through the server. The audit itself will inspect the repository again when launched.</span>
+                </div>
+                {repositoryInspectionState === "error" && repositoryInspectionError ? (
+                  <div className="repository-inspection repository-inspection--error" role="alert">
+                    <CircleAlert size={16} />
+                    <p>{repositoryInspectionError}</p>
+                  </div>
+                ) : null}
+                {repositoryInspection ? (
+                  <div className="repository-inspection" aria-live="polite">
+                    <div className="repository-inspection__header">
+                      {hasRepositorySourceEvidence(repositoryInspection) ? <CheckCircle2 size={16} /> : <CircleAlert size={16} />}
+                      <div>
+                        <strong>{repositoryInspection.repository?.fullName ?? repositoryInspection.reference.canonicalUrl}</strong>
+                        <span>{hasRepositorySourceEvidence(repositoryInspection) ? "Repository evidence connected" : repositoryInspection.status === "public_metadata" || repositoryInspection.sourceCoverage === "metadata_only" ? "Public metadata only" : "Source connection required"}</span>
+                      </div>
+                    </div>
+                    {repositoryInspection.repository ? (
+                      <dl className="repository-inspection__summary">
+                        <div><dt>Branch</dt><dd>{repositoryInspection.repository.defaultBranch}</dd></div>
+                        <div><dt>Language</dt><dd>{repositoryInspection.signals.languages[0] ?? repositoryInspection.repository.primaryLanguage ?? "Not detected"}</dd></div>
+                        <div><dt>Package</dt><dd>{repositoryInspection.signals.packageManifest ? "package.json found" : "Not detected"}</dd></div>
+                        <div><dt>Workflows</dt><dd>{repositoryInspection.signals.workflows} {repositoryInspection.signals.workflows === 1 ? "workflow" : "workflows"}</dd></div>
+                      </dl>
+                    ) : null}
+                    {repositoryInspection.signals.languages.length > 1 ? (
+                      <div className="repository-inspection__languages" aria-label="Detected repository languages">
+                        {repositoryInspection.signals.languages.slice(0, 6).map((language) => <span key={language}>{language}</span>)}
+                      </div>
+                    ) : null}
+                    {repositoryInspection.limitation ? <p className="repository-inspection__limitation">{repositoryInspection.limitation}</p> : null}
+                  </div>
+                ) : null}
+                <label className="field-label field-label--inline">
+                  Branch
+                  <div className="field-shell field-shell--compact"><input value={draft.branch} onChange={(event) => patchDraft("branch", event.target.value)} placeholder="main" /></div>
+                </label>
+              </DockStation>
+            ) : null}
           </GlassPanel>
           <GlassPanel className="source-coverage-note" tone="mist">
-            <FolderGit2 size={17} />
+            {targetMode === "url" ? <Link2 size={17} /> : targetMode === "repo" ? <FolderGit2 size={17} /> : <Sparkles size={17} />}
             <div>
               <span className="panel-kicker">Evidence coverage boundary</span>
-              <strong>{getCoverageTitle(repositoryInspection, hasRepositorySource)}</strong>
-              <p>{getCoverageDescription(repositoryInspection)}</p>
+              <strong>{targetCoverageTitle}</strong>
+              <p>{targetCoverageDescription}</p>
             </div>
           </GlassPanel>
-          <div className="wizard-note"><LockKeyhole size={15} />Credentials are never requested in this local demo. Real test credentials remain server-side in a future isolated runner.</div>
+          <div className="wizard-note"><LockKeyhole size={15} />Credentials are not requested in this pass. Real test credentials should live server-side in the isolated runner.</div>
         </div>
       ) : null}
 
@@ -496,7 +616,7 @@ export function AuditWizard() {
               <GlassPanel className="authorization-card" tone="standard">
                 <div className="authorization-card__icon"><ShieldCheck size={19} /></div>
                 <h3>Confirm audit authorization</h3>
-                <p>Only launch reviews against systems your team owns or has explicit written permission to assess. Active or destructive scanning is not part of demo mode.</p>
+                <p>Only launch reviews against systems your team owns or has explicit written permission to assess. Active or destructive scanning is not part of the safe MVP runner.</p>
                 <label className={cn("authorization-check", showIssues && !authorized && "authorization-check--error")}>
                   <input type="checkbox" checked={authorized} onChange={(event) => setAuthorized(event.target.checked)} />
                   <span><Check size={14} /></span>
@@ -505,19 +625,20 @@ export function AuditWizard() {
               </GlassPanel>
               <GlassPanel className="demo-safety-card" tone="mist">
                 <CircleDashed size={18} />
-                <div><span className="panel-kicker">Demo safety boundary</span><strong>No active test traffic or credentials are sent in demo mode.</strong><p>Repository metadata is fetched only when you explicitly inspect a GitHub URL.</p></div>
+                <div><span className="panel-kicker">MVP safety boundary</span><strong>No active exploit traffic or credentials are sent by this control-plane runner.</strong><p>Repository evidence is fetched only for the approved GitHub URL and staging checks remain passive.</p></div>
               </GlassPanel>
               <GlassPanel className="source-coverage-card" tone="mist">
-                <FolderGit2 size={18} />
-                <div><span className="panel-kicker">Coverage limitation</span><strong>{getCoverageTitle(repositoryInspection, hasRepositorySource)}</strong><p>{getCoverageDescription(repositoryInspection)}</p></div>
+                {targetMode === "url" ? <Link2 size={18} /> : targetMode === "repo" ? <FolderGit2 size={18} /> : <Sparkles size={18} />}
+                <div><span className="panel-kicker">Selected target coverage</span><strong>{targetCoverageTitle}</strong><p>{targetCoverageDescription}</p></div>
               </GlassPanel>
               {showIssues && !authorized ? <p className="inline-error">Confirm authorization to launch the release review.</p> : null}
+              {launchError ? <p className="inline-error">{launchError}</p> : null}
             </div>
           </div>
         </div>
       ) : null}
 
-      {showIssues && step !== 3 ? <p className="inline-error">Complete the highlighted fields before continuing.</p> : null}
+      {showIssues && step !== 3 ? <p className="inline-error">{missingTargetMessage}</p> : null}
       <div className="wizard-footer">
         <button type="button" className="button button--quiet" onClick={() => setStep((current) => Math.max(1, current - 1))} disabled={step === 1}>
           <ArrowLeft size={16} /> Back
@@ -527,8 +648,8 @@ export function AuditWizard() {
             {step === 1 ? "Define audit scope" : "Generate audit plan"} <ArrowRight size={16} />
           </button>
         ) : (
-          <button type="button" className="button button--primary button--launch" onClick={launch}>
-            <Cloud size={16} /> Launch authorized audit
+          <button type="button" className="button button--primary button--launch" onClick={launch} disabled={launching}>
+            {launching ? <LoaderCircle size={16} className="repository-inspection__spinner" /> : <Cloud size={16} />} {launching ? "Launching audit..." : "Launch authorized audit"}
           </button>
         )}
       </div>
@@ -537,6 +658,7 @@ export function AuditWizard() {
 }
 
 function DockStation({
+  className,
   number,
   icon,
   title,
@@ -544,6 +666,7 @@ function DockStation({
   complete,
   children,
 }: {
+  className?: string;
   number: string;
   icon: React.ReactNode;
   title: string;
@@ -552,7 +675,7 @@ function DockStation({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("dock-station", complete && "dock-station--complete")}>
+    <div className={cn("dock-station", complete && "dock-station--complete", className)}>
       <div className="dock-station__heading">
         <span className="dock-station__number">{number}</span>
         <span className="dock-station__icon">{icon}</span>

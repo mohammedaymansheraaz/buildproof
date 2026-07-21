@@ -1,20 +1,11 @@
-export type AiProviderId = "openrouter" | "nebius" | "openai" | "none";
+import "server-only";
 
-type ProviderConfig = {
-  id: Exclude<AiProviderId, "none">;
-  apiKey?: string;
-  baseUrl: string;
-  model: string;
-  title?: string;
-  siteUrl?: string;
-};
+import { getResolvedAiProviderStatus, resolveAiProviderConfig } from "@/lib/ai-model-connections";
+import { callOpenAiCompatibleChat, type RuntimeAiProviderId, type RuntimeAiProviderStatus } from "@/lib/ai-model-runtime";
 
-export type AiProviderStatus = {
-  provider: AiProviderId;
-  configured: boolean;
-  model: string | null;
-  mode: "live" | "unavailable";
-};
+export type AiProviderId = RuntimeAiProviderId | "none";
+
+export type AiProviderStatus = RuntimeAiProviderStatus;
 
 export type AiBriefRequest = {
   purpose: "product-intelligence" | "finding-explanation" | "launch-brief";
@@ -23,65 +14,19 @@ export type AiBriefRequest = {
 };
 
 export type AiBriefResponse = {
-  provider: Exclude<AiProviderId, "none">;
+  provider: RuntimeAiProviderId;
   model: string;
+  source: "user" | "deployment";
+  connectionId?: string;
   text: string;
 };
 
-function selectedProvider(): AiProviderId {
-  const requested = process.env.AI_PROVIDER?.toLowerCase();
-  if (requested === "openrouter" || requested === "nebius" || requested === "openai") return requested;
-  if (process.env.OPENROUTER_API_KEY) return "openrouter";
-  if (process.env.NEBIUS_API_KEY) return "nebius";
-  if (process.env.OPENAI_API_KEY) return "openai";
-  return "none";
-}
+type AiGenerationContext = {
+  userId?: string | null;
+};
 
-function getProviderConfig(): ProviderConfig | null {
-  const provider = selectedProvider();
-
-  if (provider === "openrouter") {
-    return {
-      id: provider,
-      apiKey: process.env.OPENROUTER_API_KEY,
-      baseUrl: process.env.OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1",
-      model: process.env.OPENROUTER_MODEL ?? "openrouter/free",
-      title: process.env.OPENROUTER_APP_NAME ?? "BuildProof",
-      siteUrl: process.env.OPENROUTER_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL,
-    };
-  }
-
-  if (provider === "nebius") {
-    return {
-      id: provider,
-      apiKey: process.env.NEBIUS_API_KEY,
-      baseUrl: process.env.NEBIUS_BASE_URL ?? "https://api.tokenfactory.nebius.com/v1",
-      model: process.env.NEBIUS_MODEL ?? "",
-    };
-  }
-
-  if (provider === "openai") {
-    return {
-      id: provider,
-      apiKey: process.env.OPENAI_API_KEY,
-      baseUrl: "https://api.openai.com/v1",
-      // Keep the optional fallback explicit. A deployment must choose a model
-      // it is entitled to use instead of inheriting an unverified default.
-      model: process.env.OPENAI_MODEL ?? "",
-    };
-  }
-
-  return null;
-}
-
-export function getAiProviderStatus(): AiProviderStatus {
-  const config = getProviderConfig();
-  return {
-    provider: config?.id ?? "none",
-    configured: Boolean(config?.apiKey && config.model),
-    model: config?.model || null,
-    mode: config?.apiKey && config.model ? "live" : "unavailable",
-  };
+export async function getAiProviderStatus(userId?: string | null): Promise<AiProviderStatus> {
+  return getResolvedAiProviderStatus(userId);
 }
 
 function buildMessages(request: AiBriefRequest) {
@@ -93,47 +38,33 @@ function buildMessages(request: AiBriefRequest) {
 
   return [
     {
-      role: "system",
+      role: "system" as const,
       content: "You are BuildProof's evidence explainer. Do not invent test results, severity, access, or approval. State limitations when evidence is incomplete. Return concise, structured prose for a human release owner.",
     },
     {
-      role: "user",
+      role: "user" as const,
       content: `Purpose: ${request.purpose}\nInstructions: ${request.instructions.slice(0, 4_000)}\n\nRedacted evidence:\n${evidence || "No evidence was supplied."}`,
     },
   ];
 }
 
-export async function generateAiBrief(request: AiBriefRequest): Promise<AiBriefResponse> {
-  const config = getProviderConfig();
+export async function generateAiBrief(request: AiBriefRequest, context: AiGenerationContext = {}): Promise<AiBriefResponse> {
+  const config = await resolveAiProviderConfig(context.userId);
   if (!config?.apiKey || !config.model) {
-    throw new Error("AI is not configured. Add a server-only provider key and model to the deployment environment.");
+    throw new Error("AI is not configured. Add and save a model in AI Models, or configure a server-side provider key and model.");
   }
 
-  const response = await fetch(`${config.baseUrl.replace(/\/$/, "")}/chat/completions`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${config.apiKey}`,
-      "Content-Type": "application/json",
-      ...(config.id === "openrouter" && config.siteUrl ? { "HTTP-Referer": config.siteUrl } : {}),
-      ...(config.id === "openrouter" && config.title ? { "X-OpenRouter-Title": config.title } : {}),
-    },
-    body: JSON.stringify({
-      model: config.model,
-      messages: buildMessages(request),
-      temperature: 0.2,
-      max_tokens: 900,
-    }),
-    cache: "no-store",
-    signal: AbortSignal.timeout(25_000),
+  const response = await callOpenAiCompatibleChat(config, buildMessages(request), {
+    temperature: 0.2,
+    maxTokens: 900,
+    timeoutMs: 25_000,
   });
 
-  if (!response.ok) {
-    throw new Error(`AI provider request failed (${response.status}).`);
-  }
-
-  const payload = (await response.json()) as { choices?: Array<{ message?: { content?: string | null }; text?: string }>; model?: string };
-  const text = payload.choices?.[0]?.message?.content ?? payload.choices?.[0]?.text;
-  if (!text) throw new Error("AI provider returned no readable response.");
-
-  return { provider: config.id, model: payload.model ?? config.model, text };
+  return {
+    provider: config.id,
+    model: response.model,
+    source: config.source,
+    connectionId: config.connectionId,
+    text: response.text,
+  };
 }

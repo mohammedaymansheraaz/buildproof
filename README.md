@@ -1,125 +1,119 @@
 # BuildProof
 
-BuildProof is a premium release-assurance workspace that turns repository context, product intent, staging evidence, cloud-readiness signals, accessibility, and safe security reviews into an evidence-backed ship decision.
+BuildProof is an AI-assisted release-audit workspace that turns a GitHub repository, a running app URL, and scoped evidence into a CTO-level ship / review / hold report.
 
-This build now has a public product site, a guarded workspace foundation, and a complete local **Demo Audit Engine** for a reliable end-to-end competition story. Real integrations stay behind deliberate server-side boundaries; BuildProof does not claim to scan a live target until those boundaries are in place.
+## How to review this
 
-The current MVP definition lives in [`mvp.md`](mvp.md), and the visual direction lives in [`design-theme.md`](design-theme.md).
+Running the project locally is optional and is not required to evaluate the submission.
 
-## Run locally
+Primary review path:
+
+- Demo video: add the final OpenAI Build Week video link here before submission.
+- Live landing page: https://mohammedaymansheraaz.github.io/buildproof/
+- Local proof path tested in Codex: sign in or continue as guest → create audit with repo + URL → inspect repository → launch audit → open `/reports`.
+
+If you only have two minutes, watch the demo video, open the live landing page, and read the “What it does” section below. The local setup section is only for judges who want to run the control-plane app themselves.
+
+## How Codex was used
+
+Codex was used as the main build partner across the project, not just for small completions.
+
+Specific work done through Codex in this repo:
+
+- Built and iterated the cinematic landing sequence: the unified audit-film page, full-screen chapter story, glass UI, scroll timing, and final promotion of the production landing page.
+- Built the audit product structure around five visible pillars while preserving the internal specialist-agent system.
+- Wired Supabase authentication and protected app routes, then browser-tested login, dashboard entry, audit creation, and report navigation.
+- Built the URL / GitHub / URL + GitHub audit intake flow so users can choose the evidence they actually have.
+- Added Supabase-backed audit persistence for projects, audit runs, findings, evidence, events, and reports.
+- Added the AI Models / BYOK direction and the CTO-level AI synthesis path, then debugged the real report flow.
+- Verified the real browser path against `https://github.com/mohammedaymansheraaz/buildproof` and `https://mohammedaymansheraaz.github.io/buildproof/`, producing a persisted `READY WITH REVIEW` report.
+
+Relevant commits include `37d2c5b Build BuildProof audit foundation`, `8f4065f Promote cinematic audit film landing`, `54233c1 Expand audit film into full-screen story`, and `bee2f66 Slow audit film pacing`.
+
+## How GPT-5.6 is used in the running product
+
+GPT-5.6 is used for the CTO-level report synthesis after an audit has already produced deterministic evidence.
+
+The visible entry point is the `Generate AI synthesis` button on `/reports` in [`components/release-report.tsx`](components/release-report.tsx). That calls [`app/api/audits/[auditId]/ai-report/route.ts`](app/api/audits/[auditId]/ai-report/route.ts), which calls [`generatePersistedAiReport`](lib/persisted-audits.ts), which uses the OpenAI Agents SDK orchestration in [`lib/ai-agent-orchestrator.ts`](lib/ai-agent-orchestrator.ts).
+
+The synthesis creates five specialist summaries plus a final CTO-level agent. The model is configured by `OPENAI_MODEL`; for this submission environment it is set to `gpt-5.6-sol`, with `AI_PROVIDER=openai`. The agent instructions require every recommendation to trace back to supplied evidence and to report limitations instead of inventing findings.
+
+In the latest local proof run, the deterministic report path worked end-to-end. The AI synthesis UI correctly waited for a configured model because the local `OPENAI_API_KEY` was not present yet.
+
+## Bring your own model key
+
+BuildProof is designed so each user connects their own model key instead of the app relying on one shared key. That keeps cost, rate limits, provider choice, and audit data ownership with the person or team running the audit.
+
+The flow is: register or continue as guest → open **AI Models** → add your key once → start an audit → the report references that saved model. GPT-5.6 via `gpt-5.6-sol` is the default OpenAI submission target, but the UI also supports OpenRouter, Nebius, and OpenAI-compatible providers.
+
+## What it does
+
+BuildProof starts with an authorized target: a GitHub repository, a running app URL, or both. It maps the product, inspects repository and staging evidence, and groups the result into five readable audit pillars: Product Intelligence, Experience & Quality, Engineering & Scale, Security & Reliability, and AI & Launch Readiness.
+
+Internally, those pillars contain specialist perspectives such as product understanding, UI/UX QA, functional QA, performance, backend/cloud, database, DevOps, security, auth/data-protection review, AI evaluation, cost review, and final CTO synthesis. The report separates severity from confidence, includes evidence boundaries, and produces a release verdict instead of a generic chatbot summary.
+
+## Full local setup
+
+Required environment variables:
+
+| Variable | What it is for | Where to get it |
+| --- | --- | --- |
+| `NEXT_PUBLIC_APP_URL` | Local app origin for redirects and provider metadata. | Use `http://localhost:3000` locally. |
+| `NEXT_PUBLIC_DEMO_MODE` | Controls client demo labeling. | Set `false` for the live Supabase-backed path. |
+| `AUDIT_MODE` | Selects live vs demo audit behavior. | Set `live` for real persisted audits. |
+| `NEXT_PUBLIC_SUPABASE_URL` | Browser-safe Supabase project URL. | Supabase Dashboard → Project Settings → API → Project URL. |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser-safe Supabase publishable/anon key. | Supabase Dashboard → Project Settings → API → publishable/anon key. |
+| `SUPABASE_SECRET_KEY` | Server-only Supabase service role key for persistence. | Supabase Dashboard → Project Settings → API → service role/secret key. |
+| `CREDENTIAL_ENCRYPTION_KEY` | Server-only encryption secret for saved AI model keys. | Generate locally with `openssl rand -base64 32`. |
+| `GITHUB_TOKEN` | Server-only read access for repository inspection. | GitHub → Settings → Developer settings → fine-grained personal access token with read-only repository access. |
+| `AI_PROVIDER` | Selects the deployment AI provider. | Set `openai` for GPT-5.6 synthesis. |
+| `OPENAI_API_KEY` | Server-only key for CTO-level AI synthesis. | OpenAI Platform → API keys. |
+| `OPENAI_MODEL` | Exact model used for synthesis. | Set `gpt-5.6-sol`. |
+
+Supported Supabase aliases in the current code:
+
+- `SUPABASE_URL` may be used instead of `NEXT_PUBLIC_SUPABASE_URL`.
+- `SUPABASE_PUBLISHABLE_KEY` or `SUPABASE_ANON_KEY` may be used instead of `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- `SUPABASE_SERVICE_ROLE_KEY` may be used instead of `SUPABASE_SECRET_KEY`.
+
+Apply migrations:
+
+```bash
+supabase db push
+```
+
+If using the Supabase SQL Editor instead of the CLI, apply these files in order:
+
+```text
+supabase/migrations/20260721000000_buildproof_foundation.sql
+supabase/migrations/20260722000000_ai_model_connections.sql
+```
+
+Start the app:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. The public landing page is at `/`; the workspace is at `/dashboard`.
+Open `http://localhost:3000`.
 
-Useful checks:
+## Known limitations
 
-```bash
-npm run typecheck
-npm run lint
-npm run build
-```
+- Only audit systems the user owns or has explicit written authorization to test.
+- First live audits target verified staging/preview environments, not production by default.
+- No active penetration testing, exploit execution, credential attacks, destructive actions, arbitrary shell access, arbitrary network discovery, or automatic code changes.
+- Database and cloud findings are source/configuration-based until a separately approved, read-only integration exists.
+- Authenticated journey checks require dedicated test credentials supplied through a secure server-side mechanism; otherwise they are reported as unavailable, not passed.
+- AI evaluation is optional, bounded, redacted, and cannot certify model safety or legal compliance.
+- Scores are evidence/coverage-aware. Missing evidence lowers coverage and blocks a positive release verdict; a high-looking demo fixture never represents a live audit.
+- Recommendations are drafts for human review. Fixes become code only through an approved human workflow and a linked verification run.
 
-## What works now
+## Tech stack
 
-- A public landing experience that walks through the real BuildProof pipeline, with a pinned desktop signal sequence and a static reduced-motion/mobile fallback.
-- Temporary Clerk-ready Register/Login routes at `/sign-up` and `/sign-in`; this is the current placeholder boundary while the MVP moves to Supabase Auth and PostgreSQL.
-- A glass-and-metal Release Lens dashboard with release posture and prioritized evidence.
-- An audit dock that captures repository, staging target, product intent, module scope, and explicit authorization.
-- A deterministic, time-based demo audit that persists in browser local storage and can be fast-forwarded for demos.
-- Evidence spine, live runner trace, finding filters, reproduction context, and suggested-fix workspace.
-- Fix briefs, safe verification reruns, printable release passports, JSON export, settings, and integration visibility.
-- Responsive mobile layout and reduced-motion support.
-
-Use **Use sample SaaS** in the New Audit screen for the presentation-ready scenario.
-
-## Configure authentication
-
-The current codebase still has temporary Clerk wiring. The MVP target is Supabase Auth with Supabase PostgreSQL, because the product needs auth, tenant data, audit runs, findings, and reports in one production-shaped backend.
-
-Temporary Clerk mode:
-
-1. Create a Clerk application and enable **Email + password** and **Google** in its dashboard.
-2. Copy the publishable and secret keys into the ignored `.env` file:
-
-   ```bash
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
-   CLERK_SECRET_KEY=
-   ```
-
-3. Keep the route values already included in `.env` (`/sign-in`, `/sign-up`, and `/dashboard`) and restart `npm run dev`.
-
-With both keys present, `/dashboard`, `/audit`, `/audits/*`, `/findings`, `/fix-center`, `/report`, `/reports`, `/integrations`, and `/settings` require an authenticated Clerk session. The corresponding server layout checks the session as a second boundary.
-
-MVP Supabase mode:
-
-1. Create a Supabase project.
-2. Add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and server-only `SUPABASE_SECRET_KEY` to `.env`.
-3. Implement Supabase Auth, row-level security, and the MVP tables listed in [`mvp.md`](mvp.md).
-4. Remove Clerk wiring after Supabase route protection is live.
-
-## Demo safety boundary
-
-Demo mode does not connect to GitHub, OpenAI, a cloud provider, or any target URL. It does not make browser requests, run a scanner, accept credentials, or perform a security test against an external system. Evidence is deterministic and labeled as demo evidence.
-
-Real deployments should enforce authorization, an allowlisted owned/staging target, isolated disposable runners, redaction of sensitive data, rate limits, and a non-destructive security policy. Fixes should remain proposals or owner-approved draft PRs only.
-
-`AUDIT_MODE=demo` is now enforced by the audit route. If that value changes before a real authenticated control plane and runner are connected, audit creation returns `503` rather than implying a live audit exists.
-
-## Environment variables
-
-`.env` is created for local use and is git-ignored. `.env.example` is the committed template. No public/free keys are included because they are unsafe and unreliable.
-
-No key is needed to run the app today. Add only the integrations you are ready to configure:
-
-| Capability | Variables |
-| --- | --- |
-| OpenAI planning/reporting | `OPENAI_API_KEY`, `OPENAI_MODEL` |
-| GitHub import / draft PRs | `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_WEBHOOK_SECRET` (prefer a GitHub App over a shared token) |
-| Persistent data | `DATABASE_URL` |
-| Background jobs | `REDIS_URL`, `AUDIT_RUNNER_URL`, `AUDIT_RUNNER_TOKEN` |
-| Evidence artifacts | `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` |
-| Team authentication | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, later `CLERK_WEBHOOK_SIGNING_SECRET` |
-
-Keep all private values server-side. Never use a `NEXT_PUBLIC_` prefix for OpenAI, GitHub, database, runner, storage, or encryption credentials.
-
-## Production architecture next
-
-The UI already separates the user experience from the audit engine. The next implementation layer can swap Demo Audit Engine for a queued runner architecture:
-
-```text
-Next.js control plane + Supabase sessions
-  -> PostgreSQL + Redis/outbox
-  -> isolated worker container
-      -> GitHub/repository intelligence
-      -> Playwright + axe-core + Lighthouse
-      -> API/config/cloud adapters
-      -> Semgrep, Gitleaks, Trivy, osv-scanner
-      -> authorized non-destructive OWASP baseline checks
-  -> object storage for screenshots, traces, and reports
-```
-
-Never run long-lived browser or security work inside a Next.js request handler. Queue it and execute it in disposable infrastructure that validates the owned/staging scope before doing any work.
-
-## What is left before a real launch
-
-1. PostgreSQL + Drizzle migrations, organization/role data, and authenticated server mutations.
-2. Server-side scope approval and target verification (including SSRF/private-network protections) before any runner fetches a URL.
-3. Redis/outbox jobs and disposable, no-root browser/security runners.
-4. Object storage for redacted evidence, plus retention, signed artifact access, and audit logs.
-5. GitHub App installation flow, then OpenAI/reporting integrations behind policy checks.
-6. End-to-end tests for tenant isolation, authorization, target blocking, state transitions, and evidence/verdict truthfulness.
-
-The detailed founder roadmap and production gates live in [`workflow.md`](workflow.md). The narrower first release is defined in [`mvp.md`](mvp.md).
-
-## Key product files
-
-- [`workflow.md`](workflow.md) — build checklist, product boundaries, and integration contract.
-- [`mvp.md`](mvp.md) — first shippable product scope and success criteria.
-- [`design-theme.md`](design-theme.md) — BuildProof visual system and theme rules.
-- [`lib/audit-engine.ts`](lib/audit-engine.ts) — audit state machine, scoring, and verdict policy.
-- [`lib/demo-data.ts`](lib/demo-data.ts) — deterministic competition scenario and evidence fixtures.
-- [`components`](components) — product workflow and visual system.
+- Next.js 16, React 19, TypeScript
+- Supabase Auth and Supabase PostgreSQL
+- OpenAI Agents SDK and OpenAI-compatible model adapter
+- GitHub repository inspection through server-only token access
+- GSAP, Lenis, React Three Fiber, and glass/film-style UI components
+- ESLint and TypeScript checks

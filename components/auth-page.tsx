@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
-import { Aperture, ArrowLeft, ArrowRight, CheckCircle2, KeyRound, LoaderCircle, ShieldCheck } from "lucide-react";
+import { Aperture, ArrowLeft, ArrowRight, CheckCircle2, KeyRound, LoaderCircle, ShieldCheck, UserRound } from "lucide-react";
 import { SignIn, SignUp } from "@clerk/nextjs";
 import { useAuthProvider } from "@/components/app-providers";
 import { demoAuthStorageKey, demoCredentials } from "@/lib/demo-auth";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { useSupabaseConfig } from "@/components/supabase-config-provider";
 import styles from "./auth-page.module.css";
 
 export type AuthPageMode = "sign-in" | "sign-up" | "forgot-password" | "reset-password";
@@ -79,6 +80,7 @@ function ClerkAuthPanel({ mode }: { mode: AuthPageMode }) {
 
 function SupabaseAuthPanel({ mode }: { mode: AuthPageMode }) {
   const router = useRouter();
+  const config = useSupabaseConfig();
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
@@ -96,7 +98,7 @@ function SupabaseAuthPanel({ mode }: { mode: AuthPageMode }) {
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const supabase = createBrowserSupabaseClient();
+    const supabase = createBrowserSupabaseClient(config);
     if (!supabase) {
       setState("error");
       setMessage("Supabase authentication is not configured for this deployment.");
@@ -177,7 +179,7 @@ function SupabaseAuthPanel({ mode }: { mode: AuthPageMode }) {
   };
 
   const signInWithGoogle = async () => {
-    const supabase = createBrowserSupabaseClient();
+    const supabase = createBrowserSupabaseClient(config);
     if (!supabase) return;
     setState("submitting");
     setMessage(null);
@@ -188,6 +190,36 @@ function SupabaseAuthPanel({ mode }: { mode: AuthPageMode }) {
     if (error) {
       setState("error");
       setMessage("Google sign-in is not enabled for this Supabase project yet.");
+    }
+  };
+
+  const continueAsGuest = async () => {
+    const supabase = createBrowserSupabaseClient(config);
+    if (!supabase) {
+      setState("error");
+      setMessage("Supabase authentication is not configured for this deployment.");
+      return;
+    }
+
+    setState("submitting");
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/auth/guest", {
+        method: "POST",
+        headers: { Accept: "application/json" },
+      });
+      const payload = await response.json().catch(() => null) as { email?: string; password?: string; error?: string } | null;
+      if (!response.ok || !payload?.email || !payload.password) {
+        throw new Error(payload?.error ?? "BuildProof could not prepare a guest session.");
+      }
+      const { error } = await supabase.auth.signInWithPassword({ email: payload.email, password: payload.password });
+      if (error) throw error;
+      router.replace("/dashboard");
+      router.refresh();
+    } catch (error) {
+      setState("error");
+      setMessage(error instanceof Error ? error.message : "Guest access could not be opened. Use email sign-in instead.");
     }
   };
 
@@ -209,9 +241,14 @@ function SupabaseAuthPanel({ mode }: { mode: AuthPageMode }) {
       </div>
 
       {mode === "sign-in" || mode === "sign-up" ? (
-        <button className="auth-oauth-button" type="button" disabled={state === "submitting"} onClick={signInWithGoogle}>
-          <GoogleMark /> Continue with Google
-        </button>
+        <div className="auth-fast-actions">
+          <button className="auth-oauth-button" type="button" disabled={state === "submitting"} onClick={signInWithGoogle}>
+            <GoogleMark /> Continue with Google
+          </button>
+          <button className="auth-oauth-button auth-guest-button" type="button" disabled={state === "submitting"} onClick={() => void continueAsGuest()}>
+            <UserRound size={16} /> Continue as guest
+          </button>
+        </div>
       ) : null}
 
       {mode === "sign-in" || mode === "sign-up" ? <div className="auth-divider"><span>or continue with email</span></div> : null}

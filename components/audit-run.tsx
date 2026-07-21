@@ -22,7 +22,7 @@ import {
 import { useAudit } from "@/components/audit-provider";
 import { CategoryIcon, EmptyState, GlassPanel, SeverityBadge } from "@/components/ui";
 import { AUDIT_STAGES, calculateReleaseScore, getAuditProgress, getReleaseVerdict } from "@/lib/audit-engine";
-import { repositoryRequiredCategories } from "@/lib/audit-domains";
+import { browserRequiredCategories, repositoryRequiredCategories } from "@/lib/audit-domains";
 import { cn, formatTimestamp } from "@/lib/utils";
 import type { EvidenceKind, Finding } from "@/lib/types";
 
@@ -52,7 +52,7 @@ export function AuditRunScreen({ auditId }: { auditId: string }) {
     return (
       <EmptyState
         title="That audit is not in this workspace"
-        detail="It may have been cleared from local demo data. Create a new audit to continue."
+        detail="It may belong to another workspace or have been removed. Create a new audit to continue."
         action={<Link className="button button--primary" href="/audits/new">New audit <ArrowRight size={16} /></Link>}
       />
     );
@@ -64,8 +64,39 @@ export function AuditRunScreen({ auditId }: { auditId: string }) {
   const selectedStage = AUDIT_STAGES[selectedStageIndex] ?? progress.stage;
   const selectedVisual = stageVisuals[selectedStageIndex] ?? stageVisuals[0];
   const hasRepositorySource = Boolean(run.repositoryUrl.trim());
+  const hasStagingTarget = Boolean(run.stagingUrl.trim());
+  const targetLabel = hasStagingTarget && hasRepositorySource
+    ? `${run.stagingUrl} · ${run.repositoryUrl}`
+    : hasStagingTarget
+      ? run.stagingUrl
+      : hasRepositorySource
+        ? run.repositoryUrl
+        : "No target connected";
+  const targetModeLabel = hasStagingTarget && hasRepositorySource
+    ? "URL + GitHub review"
+    : hasStagingTarget
+      ? "URL-only review"
+      : hasRepositorySource
+        ? "GitHub repo review"
+        : "Target missing";
   const hasSourceCoverageGap = !hasRepositorySource && run.selectedModules.some((category) => repositoryRequiredCategories.includes(category));
-  const liveStatus = !progress.isComplete ? "EVIDENCE GATHERING" : hasSourceCoverageGap ? "COVERAGE LIMITED" : verdict;
+  const hasBrowserCoverageGap = !hasStagingTarget && run.selectedModules.some((category) => browserRequiredCategories.includes(category));
+  const hasCoverageGap = hasSourceCoverageGap || hasBrowserCoverageGap;
+  const liveStatus = !progress.isComplete ? "EVIDENCE GATHERING" : hasCoverageGap ? "COVERAGE LIMITED" : verdict;
+  const coverageTitle = hasStagingTarget && hasRepositorySource
+    ? "URL + GitHub evidence is connected."
+    : hasStagingTarget
+      ? "URL-only evidence is connected."
+      : hasRepositorySource
+        ? "GitHub repo-only evidence is connected."
+        : "No audit target is connected.";
+  const coverageDetail = hasStagingTarget && hasRepositorySource
+    ? "BuildProof can compare running-app behavior with source, CI/CD, dependency, architecture, and configuration evidence."
+    : hasStagingTarget
+      ? "A staging URL supports browser, journey, accessibility, performance, and passive HTTP evidence. Add GitHub later for source, CI/CD, dependency, and architecture coverage."
+      : hasRepositorySource
+        ? "Repository evidence supports source mapping, dependencies, CI/CD, configuration, architecture, and security baseline checks. Add a running app URL later for browser journeys, accessibility, performance, and passive HTTP evidence."
+        : "Add a GitHub repository, a running app URL, or both before relying on this audit.";
 
   return (
     <div className="page page--audit-run">
@@ -74,9 +105,9 @@ export function AuditRunScreen({ auditId }: { auditId: string }) {
       </div>
       <div className="page-heading page-heading--split audit-run__heading">
         <div>
-          <div className="eyebrow"><span className="demo-chip">demo mode</span>Authorized staging review</div>
-          <h1>{progress.isComplete ? hasSourceCoverageGap ? "Evidence is sealed, but source coverage is limited." : "Evidence has been correlated." : progress.stage.activity}</h1>
-          <p>{run.stagingUrl} · {run.branch} · started {formatTimestamp(run.startedAt)}</p>
+          <div className="eyebrow"><span className="demo-chip">safe MVP runner</span>{targetModeLabel}</div>
+          <h1>{progress.isComplete ? hasCoverageGap ? "Evidence is sealed, but coverage is limited." : "Evidence has been correlated." : progress.stage.activity}</h1>
+          <p>{targetLabel} · {run.branch} · started {formatTimestamp(run.startedAt)}</p>
         </div>
         <div className="audit-run__actions">
           {progress.isComplete ? (
@@ -85,7 +116,7 @@ export function AuditRunScreen({ auditId }: { auditId: string }) {
             </button>
           ) : (
             <button type="button" className="button button--quiet" onClick={() => completeAudit(run.id)}>
-              <SkipForward size={16} /> Fast-forward demo
+              <SkipForward size={16} /> Seal audit now
             </button>
           )}
         </div>
@@ -99,13 +130,13 @@ export function AuditRunScreen({ auditId }: { auditId: string }) {
         <div className="audit-command-bar__stats">
           <span><strong>{progress.progress}%</strong> complete</span>
           <span><strong>{findings.length}</strong> evidence signals</span>
-          <span className={cn("mini-verdict", progress.isComplete && !hasSourceCoverageGap ? verdict === "DO NOT SHIP" ? "mini-verdict--hold" : verdict === "READY WITH REVIEW" ? "mini-verdict--review" : "mini-verdict--ship" : "mini-verdict--review")}>{liveStatus}</span>
+          <span className={cn("mini-verdict", progress.isComplete && !hasCoverageGap ? verdict === "DO NOT SHIP" ? "mini-verdict--hold" : verdict === "READY WITH REVIEW" ? "mini-verdict--review" : "mini-verdict--ship" : "mini-verdict--review")}>{liveStatus}</span>
         </div>
       </GlassPanel>
 
       <GlassPanel className="audit-coverage-limit" tone="mist">
         <FileSearch size={17} />
-        <div><span className="panel-kicker">Evidence coverage boundary</span><strong>{hasRepositorySource ? "Repository source is declared; source inspection waits for verified access." : "Staging-only audit: browser evidence only."}</strong><p>A staging URL can support browser, journey, accessibility, performance, and passive HTTP evidence. Private code, cloud config, database schema, and CI/CD checks require a repository or approved integration and remain unassessed without one.</p></div>
+        <div><span className="panel-kicker">Evidence coverage boundary</span><strong>{coverageTitle}</strong><p>{coverageDetail}</p></div>
       </GlassPanel>
 
       <div className="audit-run-grid">
@@ -134,7 +165,7 @@ export function AuditRunScreen({ auditId }: { auditId: string }) {
               );
             })}
           </div>
-          <div className="evidence-spine__footer"><ShieldCheck size={15} />Scoped demo runner · no external traffic leaves this application</div>
+          <div className="evidence-spine__footer"><ShieldCheck size={15} />Scoped safe runner · no destructive checks included</div>
         </GlassPanel>
 
         <GlassPanel className="evidence-theater" tone="focus">
@@ -175,7 +206,7 @@ export function AuditRunScreen({ auditId }: { auditId: string }) {
           <div className="live-findings__list">
             {findings.length ? findings.slice(0, 4).map((finding) => <LiveFinding finding={finding} key={finding.id} />) : <div className="finding-row__empty"><FileSearch size={17} />No findings are visible at this stage yet.</div>}
           </div>
-          {progress.isComplete ? <div className="live-findings__score"><span>Release confidence</span><strong>{score}</strong><span>{verdict}</span></div> : null}
+          {progress.isComplete ? <div className="live-findings__score"><span>{hasCoverageGap ? "Evidence confidence" : "Release confidence"}</span><strong>{score}</strong><span>{liveStatus}</span></div> : null}
         </GlassPanel>
       </div>
     </div>

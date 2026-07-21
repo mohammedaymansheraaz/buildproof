@@ -3,18 +3,22 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { createContext, useContext } from "react";
 import { AuditProvider } from "@/components/audit-provider";
+import { SupabaseConfigProvider } from "@/components/supabase-config-provider";
 import type { AuthProvider } from "@/lib/auth-config";
+import type { SupabasePublicConfig } from "@/lib/supabase/config";
 
 const AuthProviderContext = createContext<AuthProvider>("demo");
 
 export function AppProviders({
   children,
   authProvider,
+  supabaseConfig,
 }: {
   children: React.ReactNode;
   authProvider: AuthProvider;
+  supabaseConfig: SupabasePublicConfig | null;
 }) {
-  const content = <AuditProvider>{children}</AuditProvider>;
+  const content = <SupabaseConfigProvider config={supabaseConfig}><AuditProvider>{children}</AuditProvider></SupabaseConfigProvider>;
 
   return (
     <AuthProviderContext.Provider value={authProvider}>

@@ -83,6 +83,8 @@ export const auditDomains: AuditDomain[] = [
 
 /** Capabilities that cannot be evidenced from a staging URL alone. */
 export const repositoryRequiredCategories: AuditCategory[] = ["code", "cloud", "database", "devops"];
+/** Capabilities that need a reachable staging or preview URL for full evidence. */
+export const browserRequiredCategories: AuditCategory[] = ["functional", "accessibility", "performance"];
 
 export function domainRequiresRepository(domainId: AuditDomainId) {
   return getAuditDomain(domainId).categories.some((category) => repositoryRequiredCategories.includes(category));

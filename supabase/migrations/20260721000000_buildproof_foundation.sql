@@ -215,7 +215,9 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
-  if tg_op = 'DELETE' and old.role = 'owner' and not exists (
+  if tg_op = 'DELETE' and old.role = 'owner'
+    and exists (select 1 from public.projects where id = old.project_id)
+    and not exists (
     select 1 from public.project_memberships
     where project_id = old.project_id and role = 'owner' and user_id <> old.user_id
   ) then

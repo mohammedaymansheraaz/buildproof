@@ -3,13 +3,15 @@
 import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { useSupabaseConfig } from "@/components/supabase-config-provider";
 
 export function useSupabaseUser() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const config = useSupabaseConfig();
 
   useEffect(() => {
-    const supabase = createBrowserSupabaseClient();
+    const supabase = createBrowserSupabaseClient(config);
     if (!supabase) {
       setLoading(false);
       return;
@@ -31,14 +33,14 @@ export function useSupabaseUser() {
       alive = false;
       listener.subscription.unsubscribe();
     };
-  }, []);
+  }, [config]);
 
   const signOut = useCallback(async () => {
-    const supabase = createBrowserSupabaseClient();
+    const supabase = createBrowserSupabaseClient(config);
     if (!supabase) return;
     await supabase.auth.signOut();
     setUser(null);
-  }, []);
+  }, [config]);
 
   return { user, loading, signOut };
 }

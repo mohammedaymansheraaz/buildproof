@@ -95,6 +95,54 @@ export type AuditRun = {
   finishedAt?: string;
   status: AuditStatus;
   isVerification?: boolean;
+  report?: AuditReport;
+};
+
+export type AuditReport = {
+  id: string;
+  verdict: "ship" | "review" | "hold" | "incomplete";
+  overallScore: number | null;
+  generatedAt: string | null;
+  report: {
+    title?: string;
+    generatedFrom?: string;
+    verdict?: ReleaseVerdict;
+    score?: number;
+    blockerCount?: number;
+    coverageLimits?: string[];
+    aiSynthesis?: AgenticAuditReport;
+    [key: string]: unknown;
+  };
+};
+
+export type AgenticAuditSection = {
+  domain: AuditDomainId;
+  title: string;
+  agents: string[];
+  score: number;
+  summary: string;
+  keySignals: string[];
+  recommendations: string[];
+  limitations: string[];
+  evidenceIds: string[];
+};
+
+export type AgenticAuditReport = {
+  status: "generated" | "skipped" | "failed";
+  provider?: string;
+  model?: string;
+  source?: "user" | "deployment";
+  connectionId?: string;
+  generatedAt: string;
+  promptVersion: string;
+  evidenceCount: number;
+  specialistSections: AgenticAuditSection[];
+  ctoSummary: string;
+  verdictNarrative: string;
+  criticalBlockers: string[];
+  nextActions: string[];
+  limitations: string[];
+  error?: string;
 };
 
 export type AuditDraft = {

@@ -12,6 +12,7 @@ import {
   FileSearch,
   FolderGit2,
   Gauge,
+  Link2,
   MousePointer2,
   Rocket,
   ShieldCheck,
@@ -20,7 +21,7 @@ import {
 import { useAudit } from "@/components/audit-provider";
 import { CategoryIcon, EmptyState, GlassPanel, MetricBar, SeverityBadge } from "@/components/ui";
 import { calculateReleaseScore, countBySeverity, domainReadiness, getAuditProgress, getReleaseVerdict } from "@/lib/audit-engine";
-import { auditDomains, auditDomainStageIndex, domainRequiresRepository, getDomainFindings, getDomainForFinding, type AuditDomainId } from "@/lib/audit-domains";
+import { auditDomains, auditDomainStageIndex, browserRequiredCategories, domainRequiresRepository, getDomainFindings, getDomainForFinding, type AuditDomainId } from "@/lib/audit-domains";
 import { formatRelativeTime } from "@/lib/utils";
 import { ReleaseStage } from "@/components/release-stage";
 import { cn } from "@/lib/utils";
@@ -43,11 +44,20 @@ const journeySteps = [
 ];
 
 export function Dashboard() {
-  const { runs, now, hydrated } = useAudit();
+  const { runs, now, hydrated, error } = useAudit();
   const [activeDomain, setActiveDomain] = useState<AuditDomainId>("product");
   const audit = runs[0];
 
   if (!hydrated) return <DashboardLoading />;
+  if (error) {
+    return (
+      <EmptyState
+        title="BuildProof needs its Supabase workspace"
+        detail={error}
+        action={<Link className="button button--primary" href="/settings">Open settings <ArrowRight size={16} /></Link>}
+      />
+    );
+  }
 
   if (!audit) {
     return (
@@ -66,23 +76,33 @@ export function Dashboard() {
   const counts = countBySeverity(findings);
   const blockerCount = counts.critical + counts.high;
   const hasRepositorySource = Boolean(audit.repositoryUrl.trim());
+  const hasStagingTarget = Boolean(audit.stagingUrl.trim());
   const hasSourceCoverageGap = !hasRepositorySource && auditDomains.some(
     (domain) => domain.categories.some((category) => audit.selectedModules.includes(category)) && domainRequiresRepository(domain.id),
   );
-  const isDecisionReady = progress.isComplete && !hasSourceCoverageGap;
-  const healthStatus = !progress.isComplete ? "EVIDENCE GATHERING" : hasSourceCoverageGap ? "COVERAGE LIMITED" : verdict;
+  const hasBrowserCoverageGap = !hasStagingTarget && audit.selectedModules.some((category) => browserRequiredCategories.includes(category));
+  const hasCoverageGap = hasSourceCoverageGap || hasBrowserCoverageGap;
+  const isDecisionReady = progress.isComplete && !hasCoverageGap;
+  const healthStatus = !progress.isComplete ? "EVIDENCE GATHERING" : hasCoverageGap ? "COVERAGE LIMITED" : verdict;
   const modelScore = isDecisionReady ? score : progress.progress;
+  const targetModeLabel = hasStagingTarget && hasRepositorySource
+    ? "URL + GitHub"
+    : hasStagingTarget
+      ? "URL only"
+      : hasRepositorySource
+        ? "GitHub repo only"
+        : "No target";
   const activityCopy = progress.isComplete
-    ? hasSourceCoverageGap
-      ? "Evidence sealed with source coverage limitations"
-      : audit.isVerification
+      ? hasCoverageGap
+        ? "Evidence sealed with target coverage limitations"
+        : audit.isVerification
       ? "Verification audit complete"
       : "Application intelligence report sealed"
     : progress.stage.activity;
   const primaryAction = blockerCount
     ? { href: "/findings", label: `Review ${blockerCount} blocker${blockerCount === 1 ? "" : "s"}` }
     : progress.isComplete
-    ? hasSourceCoverageGap
+    ? hasCoverageGap
       ? { href: `/audits/${audit.id}`, label: "Review coverage limits" }
       : { href: "/reports", label: "Open intelligence report" }
       : { href: `/audits/${audit.id}`, label: "View live audit" };
@@ -92,7 +112,8 @@ export function Dashboard() {
     const domainCounts = countBySeverity(domainFindings);
     const inScope = domain.categories.some((category) => audit.selectedModules.includes(category));
     const sourceLimited = !hasRepositorySource && domainRequiresRepository(domain.id);
-    const assessed = inScope && !sourceLimited && (progress.isComplete || progress.stageIndex >= auditDomainStageIndex[domain.id]);
+    const browserLimited = !hasStagingTarget && domain.categories.some((category) => browserRequiredCategories.includes(category));
+    const assessed = inScope && !sourceLimited && !browserLimited && (progress.isComplete || progress.stageIndex >= auditDomainStageIndex[domain.id]);
 
     return {
       domain,
@@ -102,6 +123,7 @@ export function Dashboard() {
       inScope,
       assessed,
       sourceLimited,
+      browserLimited,
       score: assessed ? domainReadiness(findings, domain.id) : null,
       recommendation: unresolved[0]?.recommendation,
     };
@@ -116,10 +138,20 @@ export function Dashboard() {
     tone: domain.tone,
   }));
   const scopedTeamCount = domainData.filter((item) => item.inScope).length;
-  const sourceTitle = hasRepositorySource ? audit.repositoryUrl.replace("github.com/", "") : "Staging-only evidence";
-  const sourceDetail = audit.repositoryUrl
-    ? `demo evidence shown · connection verification pending · created ${formatRelativeTime(audit.createdAt)}`
-    : "Private code, cloud, database, and CI evidence require a repository or integration.";
+  const sourceTitle = hasStagingTarget && hasRepositorySource
+    ? "URL + GitHub evidence"
+    : hasStagingTarget
+      ? "URL-only evidence"
+      : hasRepositorySource
+        ? "GitHub repo-only evidence"
+        : "No evidence target";
+  const sourceDetail = hasStagingTarget && hasRepositorySource
+    ? `${audit.stagingUrl} · ${audit.repositoryUrl.replace("github.com/", "")}`
+    : hasStagingTarget
+      ? `${audit.stagingUrl} · source coverage can be added with GitHub`
+      : hasRepositorySource
+        ? `${audit.repositoryUrl.replace("github.com/", "")} · running-app coverage can be added with URL`
+        : `created ${formatRelativeTime(audit.createdAt)} · connect a URL, repo, or both`;
 
   return (
     <div className="page page--overview">
@@ -127,7 +159,7 @@ export function Dashboard() {
         <div>
           <div className="eyebrow"><span className="live-dot" />Application audit</div>
           <h1>See what your application needs—through the expert team behind it.</h1>
-          <p>{audit.projectName} · {audit.branch} · {audit.environment} target · {progress.isComplete ? "evidence sealed" : `${progress.progress}% evidence gathered`}</p>
+          <p>{audit.projectName} · {targetModeLabel} · {audit.branch} · {audit.environment} target · {progress.isComplete ? "evidence sealed" : `${progress.progress}% evidence gathered`}</p>
         </div>
         <Link className="button button--primary dashboard-primary-action" href={primaryAction.href}>{primaryAction.label} <ArrowRight size={16} /></Link>
       </div>
@@ -155,13 +187,13 @@ export function Dashboard() {
             <div className="panel-kicker">Overall application health</div>
             <div className="health-verdict-card__score"><strong>{isDecisionReady ? score : progress.progress}</strong><span>{isDecisionReady ? "/100" : "% mapped"}</span></div>
             <h2 className={isDecisionReady ? verdict === "DO NOT SHIP" ? "verdict verdict--hold" : verdict === "READY WITH REVIEW" ? "verdict verdict--review" : "verdict verdict--ship" : "verdict verdict--progress"}>{healthStatus}</h2>
-            <p>{isDecisionReady ? blockerCount ? `${blockerCount} release blocker${blockerCount === 1 ? "" : "s"} needs a human decision.` : "No release blockers are currently open." : hasSourceCoverageGap ? "A release decision is withheld until repository or integration evidence covers the source-dependent teams." : "The decision stays provisional until the expert teams finish gathering evidence."}</p>
+            <p>{isDecisionReady ? blockerCount ? `${blockerCount} release blocker${blockerCount === 1 ? "" : "s"} needs a human decision.` : "No release blockers are currently open." : hasSourceCoverageGap ? "A release decision is withheld until repository or integration evidence covers the source-dependent teams." : hasBrowserCoverageGap ? "A release decision is withheld until a staging URL provides browser journey, accessibility, performance, and passive HTTP evidence." : "The decision stays provisional until the expert teams finish gathering evidence."}</p>
             <div className="health-verdict-card__metrics"><span><strong>{counts.critical}</strong> critical</span><span><strong>{counts.high}</strong> high</span><span><strong>{findings.filter((finding) => finding.status === "resolved").length}</strong> resolved</span></div>
             <Link className="button button--primary health-verdict-card__action" href={primaryAction.href}>{primaryAction.label} <ArrowRight size={15} /></Link>
           </GlassPanel>
 
           <Link href={`/audits/${audit.id}`} className="glass-panel glass-panel--mist source-card source-card--link health-source-card">
-            <div className="source-card__icon"><FolderGit2 size={18} /></div>
+            <div className="source-card__icon">{hasStagingTarget && hasRepositorySource ? <Sparkles size={18} /> : hasStagingTarget ? <Link2 size={18} /> : <FolderGit2 size={18} />}</div>
             <div><span className="panel-kicker">Evidence source</span><strong>{sourceTitle}</strong><small>{sourceDetail}</small></div>
             <ChevronRight size={18} />
           </Link>
@@ -174,7 +206,7 @@ export function Dashboard() {
           <span>{scopedTeamCount} expert teams · {audit.selectedModules.length} specialist capabilities</span>
         </div>
         <div className="audit-domain-grid">
-          {domainData.map(({ domain, findings: domainFindings, unresolved, counts: domainCounts, inScope, assessed, sourceLimited, score: domainScoreValue, recommendation }) => {
+          {domainData.map(({ domain, findings: domainFindings, unresolved, counts: domainCounts, inScope, assessed, sourceLimited, browserLimited, score: domainScoreValue, recommendation }) => {
             const Icon = domainIcons[domain.id];
             const active = activeDomain === domain.id;
             const releaseLevelSignals = domainCounts.critical + domainCounts.high;
@@ -182,6 +214,8 @@ export function Dashboard() {
               ? "Not included in this audit scope"
               : sourceLimited
                 ? "Repository or approved integration required for this source-dependent reading"
+              : browserLimited
+                ? "Running app URL required for browser, journey, accessibility, and performance evidence"
               : !assessed
                 ? "Evidence gathering — this expert team has not completed its reading"
               : !unresolved.length
@@ -231,7 +265,7 @@ export function Dashboard() {
             <div><strong>{evidenceCount}</strong><span>artifacts captured</span></div>
             <div><strong>{audit.selectedModules.length}</strong><span>specialist capabilities</span></div>
             <div><strong>{progress.isComplete ? "100%" : `${progress.progress}%`}</strong><span>evidence gathered</span></div>
-            <div><strong>{audit.environment}</strong><span>authorized target</span></div>
+            <div><strong>{targetModeLabel}</strong><span>authorized target</span></div>
           </div>
           <div className="evidence-coverage-card__note"><Check size={14} />Evidence is grouped by the expert team that can explain and verify it.</div>
         </GlassPanel>
