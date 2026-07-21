@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "@/app/globals.css";
 import { AppProviders } from "@/components/app-providers";
-import { isClerkConfigured } from "@/lib/auth-config";
+import { getAuthProvider } from "@/lib/auth-config";
 
 export const metadata: Metadata = {
   title: "BuildProof — Release assurance",
@@ -12,7 +12,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
-        <AppProviders clerkEnabled={isClerkConfigured()}>{children}</AppProviders>
+        <AppProviders authProvider={getAuthProvider()}>{children}</AppProviders>
       </body>
     </html>
   );

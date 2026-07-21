@@ -22,15 +22,17 @@ import {
 import { useAudit } from "@/components/audit-provider";
 import { CategoryIcon, EmptyState, GlassPanel, SeverityBadge } from "@/components/ui";
 import { AUDIT_STAGES, calculateReleaseScore, getAuditProgress, getReleaseVerdict } from "@/lib/audit-engine";
+import { repositoryRequiredCategories } from "@/lib/audit-domains";
 import { cn, formatTimestamp } from "@/lib/utils";
 import type { EvidenceKind, Finding } from "@/lib/types";
 
 const stageVisuals: Array<{ kind: EvidenceKind; label: string; title: string; subline: string }> = [
-  { kind: "code", label: "Application intake", title: "Product intelligence map", subline: "routes · roles · configuration contract" },
+  { kind: "config", label: "Product intelligence", title: "Approved application map", subline: "intent · roles · journeys · evidence boundary" },
   { kind: "browser", label: "Experience analysis", title: "Critical customer journey", subline: "browser behavior · accessible interaction" },
-  { kind: "trace", label: "Engineering analysis", title: "System and data path", subline: "API · performance · configuration · delivery" },
+  { kind: "trace", label: "Engineering & scale", title: "System and data path", subline: "API · performance · data · cloud · delivery" },
   { kind: "network", label: "Security intelligence", title: "Authorization evidence", subline: "policy check · response boundary" },
-  { kind: "config", label: "Application health report", title: "Expert evidence correlation", subline: "severity · recommendation · next decision" },
+  { kind: "config", label: "AI & launch readiness", title: "Conditional AI and launch brief", subline: "AI scope · cost context · owner decision" },
+  { kind: "config", label: "CTO-level report", title: "Expert evidence correlation", subline: "five readings · severity · ownership · next decision" },
 ];
 
 export function AuditRunScreen({ auditId }: { auditId: string }) {
@@ -61,6 +63,9 @@ export function AuditRunScreen({ auditId }: { auditId: string }) {
   const verdict = getReleaseVerdict(findings);
   const selectedStage = AUDIT_STAGES[selectedStageIndex] ?? progress.stage;
   const selectedVisual = stageVisuals[selectedStageIndex] ?? stageVisuals[0];
+  const hasRepositorySource = Boolean(run.repositoryUrl.trim());
+  const hasSourceCoverageGap = !hasRepositorySource && run.selectedModules.some((category) => repositoryRequiredCategories.includes(category));
+  const liveStatus = !progress.isComplete ? "EVIDENCE GATHERING" : hasSourceCoverageGap ? "COVERAGE LIMITED" : verdict;
 
   return (
     <div className="page page--audit-run">
@@ -70,7 +75,7 @@ export function AuditRunScreen({ auditId }: { auditId: string }) {
       <div className="page-heading page-heading--split audit-run__heading">
         <div>
           <div className="eyebrow"><span className="demo-chip">demo mode</span>Authorized staging review</div>
-          <h1>{progress.isComplete ? "Evidence has been correlated." : progress.stage.activity}</h1>
+          <h1>{progress.isComplete ? hasSourceCoverageGap ? "Evidence is sealed, but source coverage is limited." : "Evidence has been correlated." : progress.stage.activity}</h1>
           <p>{run.stagingUrl} · {run.branch} · started {formatTimestamp(run.startedAt)}</p>
         </div>
         <div className="audit-run__actions">
@@ -94,8 +99,13 @@ export function AuditRunScreen({ auditId }: { auditId: string }) {
         <div className="audit-command-bar__stats">
           <span><strong>{progress.progress}%</strong> complete</span>
           <span><strong>{findings.length}</strong> evidence signals</span>
-          <span className={cn("mini-verdict", progress.isComplete ? verdict === "DO NOT SHIP" ? "mini-verdict--hold" : verdict === "READY WITH REVIEW" ? "mini-verdict--review" : "mini-verdict--ship" : "mini-verdict--review")}>{progress.isComplete ? verdict : "EVIDENCE GATHERING"}</span>
+          <span className={cn("mini-verdict", progress.isComplete && !hasSourceCoverageGap ? verdict === "DO NOT SHIP" ? "mini-verdict--hold" : verdict === "READY WITH REVIEW" ? "mini-verdict--review" : "mini-verdict--ship" : "mini-verdict--review")}>{liveStatus}</span>
         </div>
+      </GlassPanel>
+
+      <GlassPanel className="audit-coverage-limit" tone="mist">
+        <FileSearch size={17} />
+        <div><span className="panel-kicker">Evidence coverage boundary</span><strong>{hasRepositorySource ? "Repository source is declared; source inspection waits for verified access." : "Staging-only audit: browser evidence only."}</strong><p>A staging URL can support browser, journey, accessibility, performance, and passive HTTP evidence. Private code, cloud config, database schema, and CI/CD checks require a repository or approved integration and remain unassessed without one.</p></div>
       </GlassPanel>
 
       <div className="audit-run-grid">
@@ -132,7 +142,7 @@ export function AuditRunScreen({ auditId }: { auditId: string }) {
             <div><span className="panel-kicker">{selectedVisual.label}</span><h2>{selectedVisual.title}</h2><p>{selectedVisual.subline}</p></div>
             <span className="theater-state"><Play size={13} /> {selectedStageIndex <= progress.stageIndex || progress.isComplete ? "captured" : "pending"}</span>
           </div>
-          <EvidenceTheater kind={selectedVisual.kind} finding={findings.find((item) => item.discoveredAtStage === selectedStageIndex) ?? findings[0]} />
+          <EvidenceTheater kind={selectedVisual.kind} stageLabel={selectedVisual.label} finding={findings.find((item) => item.discoveredAtStage === selectedStageIndex) ?? findings[0]} />
           <div className="evidence-theater__footer">
             <span>{selectedStage.description}</span>
             <span>{selectedStageIndex <= progress.stageIndex || progress.isComplete ? "Evidence available" : "Stage not reached"}</span>
@@ -182,7 +192,7 @@ function LiveFinding({ finding }: { finding: Finding }) {
   );
 }
 
-function EvidenceTheater({ kind, finding }: { kind: EvidenceKind; finding?: Finding }) {
+function EvidenceTheater({ kind, stageLabel, finding }: { kind: EvidenceKind; stageLabel: string; finding?: Finding }) {
   if (kind === "browser") {
     return (
       <div className="theater-preview theater-preview--browser">
@@ -206,7 +216,7 @@ function EvidenceTheater({ kind, finding }: { kind: EvidenceKind; finding?: Find
   if (kind === "config") {
     return (
       <div className="theater-preview theater-preview--config">
-        <div className="passport-mini"><span className="panel-kicker">BuildProof release passport</span><h3>Evidence correlation complete</h3><div className="passport-mini__rows"><span>Functional evidence <b>ready</b></span><span>Security evidence <b>review</b></span><span>Cloud contract <b>review</b></span></div><div className="passport-mini__seal"><ShieldCheck size={20} />Human review required</div></div>
+        <div className="passport-mini"><span className="panel-kicker">BuildProof {stageLabel}</span><h3>{stageLabel === "Product intelligence" ? "Product intent and evidence boundary" : stageLabel === "AI & launch readiness" ? "Conditional AI scope and launch ownership" : "Five readings, one release decision"}</h3><div className="passport-mini__rows">{stageLabel === "Product intelligence" ? <><span>Critical journeys <b>mapped</b></span><span>Roles &amp; boundaries <b>mapped</b></span><span>Approved sources <b>scoped</b></span><span>Coverage limitations <b>declared</b></span></> : <><span>Product intelligence <b>mapped</b></span><span>Experience &amp; quality <b>captured</b></span><span>Engineering &amp; scale <b>review</b></span><span>Security &amp; reliability <b>review</b></span><span>AI &amp; launch readiness <b>pending</b></span></>}</div><div className="passport-mini__seal"><ShieldCheck size={20} />Human review required</div></div>
       </div>
     );
   }

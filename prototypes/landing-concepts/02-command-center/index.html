@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content="BuildProof Command Center landing page prototype" />
+    <title>BuildProof — Command Center</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#console">Skip to product preview</a>
+    <header class="topbar">
+      <a class="brand" href="../index.html"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span><span>BuildProof</span><small>command center</small></a>
+      <nav><a href="#method">Method</a><a href="#agents">Agents</a><a href="#safety">Safety</a></nav>
+      <div class="actions"><button class="login" data-auth="signin">Sign in</button><button class="join" data-auth="signup">Register <span>↗</span></button></div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="overline">RELEASE INTELLIGENCE / FOR TEAMS THAT SHIP</p>
+          <h1>Stop asking whether the build looks good.</h1>
+          <p class="lede">BuildProof gives a founder, engineer, and security reviewer the same evidence-backed answer: what is ready, what is not, and who should move next.</p>
+          <div class="hero-actions"><button class="join large" data-auth="signup">Create your audit <span>→</span></button><a href="#console">Open the console <span>↓</span></a></div>
+          <dl class="proof-strip"><div><dt>10</dt><dd>specialist agents</dd></div><div><dt>5</dt><dd>clear audit lenses</dd></div><div><dt>1</dt><dd>release decision</dd></div></dl>
+        </div>
+        <div class="hero-side" aria-hidden="true">
+          <div class="signal-line"></div><div class="signal-dot dot-a"></div><div class="signal-dot dot-b"></div><div class="signal-dot dot-c"></div>
+          <p>application</p><span>connected → understood → verified</span>
+        </div>
+      </section>
+
+      <section class="console-section" id="console" aria-labelledby="console-title">
+        <div class="console-heading"><div><p class="overline">A PRODUCT TOUR, NOT A PROMISE</p><h2 id="console-title">The audit room starts with one honest overview.</h2></div><p>Use the lenses to see how separate experts contribute to the same release call. Everything below is sample evidence, shown the way a team would use it.</p></div>
+        <div class="console-frame">
+          <div class="console-top"><div class="window-controls"><i></i><i></i><i></i></div><span>BUILDPROOF / RELEASE BOARD</span><b><i></i> AUDIT COMPLETE</b></div>
+          <div class="console-main">
+            <aside class="console-nav" aria-label="Product preview navigation"><span class="nav-brand">BP</span><button class="nav-icon active" aria-label="Overview">▦</button><button class="nav-icon" aria-label="Evidence">⌁</button><button class="nav-icon" aria-label="Reports">▤</button><div></div><button class="nav-icon" aria-label="Settings">◌</button></aside>
+            <div class="console-content">
+              <div class="workspace-head"><div><small>PROJECT</small><h3>acme / customer-portal</h3><p>Authorized staging scope · 18 Jul 2026 · evidence coverage 82%</p></div><div class="verdict"><span>CONDITIONAL</span><b>78</b><small>APPLICATION HEALTH</small></div></div>
+              <div class="lens-tabs" role="tablist" aria-label="Audit pillars"><button class="selected" role="tab" aria-selected="true" data-lens="overview">Release overview</button><button role="tab" aria-selected="false" data-lens="product">Product</button><button role="tab" aria-selected="false" data-lens="experience">Experience</button><button role="tab" aria-selected="false" data-lens="engineering">Engineering</button><button role="tab" aria-selected="false" data-lens="security">Security</button><button role="tab" aria-selected="false" data-lens="launch">Launch</button></div>
+              <div class="console-view" id="console-view" aria-live="polite"></div>
+            </div>
+          </div>
+        </div>
+        <p class="console-caption"><span>INTERACTIVE MOCKUP</span> Pick a lens: the panel changes without losing the shared release context.</p>
+      </section>
+
+      <section class="method" id="method" aria-labelledby="method-title">
+        <div class="method-title"><p class="overline">A governed sequence</p><h2 id="method-title">A release review has a beginning, middle, and proof.</h2><p>BuildProof keeps the complexity in the system — not in the navigation.</p></div>
+        <div class="method-steps">
+          <article><span>01</span><h3>Connect with intent</h3><p>Sign in, choose a repository and an approved test target, then define what is in scope. The product shows capability limits before work starts.</p><small>repository · staging URL · authorization</small></article>
+          <article><span>02</span><h3>Understand before testing</h3><p>The product map identifies user roles, journeys, integrations, boundaries, and the release paths worth protecting.</p><small>surface map · critical paths · coverage plan</small></article>
+          <article><span>03</span><h3>Inspect as a team</h3><p>Specialists do bounded browser, code, service, data, security, operational, and optional AI checks against the same map.</p><small>evidence · confidence · safe checks</small></article>
+          <article><span>04</span><h3>Decide, assign, re-test</h3><p>A CTO-level synthesis links impact to owners and says what must change before release. Fixes return to a transparent re-audit loop.</p><small>verdict · remediation · re-audit</small></article>
+        </div>
+      </section>
+
+      <section class="agent-section" id="agents" aria-labelledby="agent-title">
+        <div class="agent-intro"><p class="overline">Ten specialisms, five front doors</p><h2 id="agent-title">Expert depth without a maze of tools.</h2><p>Open a pillar to see the exact agents beneath it. The Finance / CTO Agent is the final decision layer — it does not invent a separate scan.</p></div>
+        <div class="agent-layout"><div class="pillar-menu" id="pillar-menu" aria-label="Agent pillar menu"></div><div class="agent-detail" id="agent-detail"></div></div>
+      </section>
+
+      <section class="evidence-block" aria-labelledby="evidence-title">
+        <div class="evidence-copy"><p class="overline">A finding is a working object</p><h2 id="evidence-title">The issue includes the reason to believe it.</h2><p>Each item is understandable by a product lead, actionable for an engineer, and bounded enough for a responsible security review.</p></div>
+        <article class="finding-card"><header><span class="severity">CAUTION · HIGH CONFIDENCE</span><span>EXP-014</span></header><div class="finding-body"><h3>Invite acceptance does not retain a consistent state after retry.</h3><dl><div><dt>AFFECTED JOURNEY</dt><dd>Invite teammate → first workspace visit</dd></div><div><dt>OBSERVED BY</dt><dd>Functional QA Agent / browser replay + request trace</dd></div><div><dt>RECOMMENDATION</dt><dd>Make acceptance idempotent and cover refresh/retry with a regression test.</dd></div></dl></div><footer><span>Suggested owner: Product Engineering</span><button>Open evidence ↗</button></footer></article>
+      </section>
+
+      <section class="safety" id="safety"><div><p class="overline">Safety is not a footnote</p><h2>Confidence needs an explicit boundary.</h2></div><div class="safety-list"><p><b>Authorized scope only.</b> BuildProof never implies unrestricted testing or hidden-system access.</p><p><b>Coverage is visible.</b> A repository or browser target cannot prove every private runtime condition.</p><p><b>Evidence over assertion.</b> AI interpretation points back to direct evidence or states what is unknown.</p><p><b>Fixes stay reviewable.</b> A future auto-fix can propose a change; it cannot silently alter production.</p></div></section>
+
+      <section class="cta"><div class="cta-grid" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div><p class="overline">THE NEXT RELEASE DESERVES A RECORD</p><h2>Put every reviewer on the same page.</h2><p>Register, connect an authorized project, and begin with a visible scope — not a black box.</p><div class="hero-actions"><button class="join large" data-auth="signup">Register to start <span>→</span></button><button class="login" data-auth="signin">Sign in</button></div></section>
+    </main>
+    <footer class="footer"><a href="../index.html">← Prototype lab</a><span>BuildProof Command Center / mock data only</span><a href="../PRODUCT-BRIEF.md">Read the brief</a></footer>
+
+    <dialog id="auth-modal" class="auth-modal" aria-labelledby="auth-modal-title"><button class="modal-close" data-close aria-label="Close dialog">×</button><div class="auth-sigil"></div><p class="overline" id="auth-modal-overline">ACCOUNT ACCESS</p><h2 id="auth-modal-title">Enter the release room.</h2><p id="auth-modal-copy">Sign in to return to your BuildProof evidence and release reports.</p><form><label>Email address<input type="email" placeholder="you@company.com" autocomplete="email" /></label><label>Password<input type="password" placeholder="••••••••" autocomplete="current-password" /></label><button type="button" class="join">Continue <span>→</span></button><button type="button" class="google"><b>G</b> Continue with Google</button></form><small>Prototype preview only — no credentials are submitted.</small></dialog>
+    <script src="./script.js"></script>
+  </body>
+</html>

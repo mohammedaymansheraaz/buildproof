@@ -1,6 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
-import { isClerkConfigured } from "@/lib/auth-config";
+import { getAuthProvider } from "@/lib/auth-config";
+import { updateSupabaseSession } from "@/lib/supabase/proxy";
 
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
@@ -18,9 +19,11 @@ const clerkProxy = clerkMiddleware(async (auth, request) => {
   if (isProtectedRoute(request)) await auth.protect();
 });
 
-export default function proxy(request: NextRequest, event: NextFetchEvent) {
-  if (!isClerkConfigured()) return NextResponse.next();
-  return clerkProxy(request, event);
+export async function proxy(request: NextRequest, event: NextFetchEvent) {
+  const authProvider = getAuthProvider();
+  if (authProvider === "supabase") return updateSupabaseSession(request);
+  if (authProvider === "clerk") return clerkProxy(request, event);
+  return NextResponse.next({ request });
 }
 
 export const config = {

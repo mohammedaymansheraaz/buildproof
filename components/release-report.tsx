@@ -6,18 +6,26 @@ import {
   Download,
   CloudCog,
   FileCheck2,
+  FileSearch,
   LockKeyhole,
   MousePointer2,
   Printer,
+  Rocket,
   ShieldAlert,
 } from "lucide-react";
 import { useAudit } from "@/components/audit-provider";
 import { EmptyState, MetricBar, SeverityBadge } from "@/components/ui";
 import { calculateReleaseScore, countBySeverity, domainReadiness, getAuditProgress, getReleaseVerdict } from "@/lib/audit-engine";
-import { auditDomains, auditDomainStageIndex, type AuditDomainId } from "@/lib/audit-domains";
+import { auditDomains, auditDomainStageIndex, domainRequiresRepository, type AuditDomainId } from "@/lib/audit-domains";
 import { formatTimestamp } from "@/lib/utils";
 
-const domainIcons = { experience: MousePointer2, engineering: CloudCog, security: ShieldAlert } satisfies Record<AuditDomainId, typeof MousePointer2>;
+const domainIcons = {
+  product: FileSearch,
+  experience: MousePointer2,
+  engineering: CloudCog,
+  security: ShieldAlert,
+  "ai-launch": Rocket,
+} satisfies Record<AuditDomainId, typeof MousePointer2>;
 
 export function ReleaseReport() {
   const { runs, now, hydrated } = useAudit();
@@ -31,9 +39,14 @@ export function ReleaseReport() {
   const findings = progress.visibleFindings;
   const score = calculateReleaseScore(findings);
   const verdict = getReleaseVerdict(findings);
-  const isDecisionReady = progress.isComplete;
   const counts = countBySeverity(findings);
   const blockers = findings.filter((finding) => (finding.severity === "critical" || finding.severity === "high") && finding.status !== "resolved" && finding.status !== "accepted");
+  const hasRepositorySource = Boolean(audit.repositoryUrl.trim());
+  const hasSourceCoverageGap = !hasRepositorySource && auditDomains.some(
+    (domain) => domain.categories.some((category) => audit.selectedModules.includes(category)) && domainRequiresRepository(domain.id),
+  );
+  const isDecisionReady = progress.isComplete && !hasSourceCoverageGap;
+  const reportStatus = !progress.isComplete ? "EVIDENCE GATHERING" : hasSourceCoverageGap ? "COVERAGE LIMITED" : verdict;
 
   function exportJson() {
     const blob = new Blob([JSON.stringify({ audit, score, verdict, generatedAt: new Date().toISOString() }, null, 2)], { type: "application/json" });
@@ -48,7 +61,7 @@ export function ReleaseReport() {
   return (
     <div className="page page--report">
       <div className="page-heading page-heading--split report-header-actions">
-        <div><div className="eyebrow"><span className="demo-chip">{isDecisionReady ? "evidence sealed" : "evidence gathering"}</span>BuildProof application health report</div><h1>{isDecisionReady ? "A decision object for your next deployment." : "A provisional view while the expert teams gather evidence."}</h1><p>Designed to be read by engineering, product, and security together.</p></div>
+        <div><div className="eyebrow"><span className="demo-chip">{isDecisionReady ? "evidence sealed" : hasSourceCoverageGap ? "coverage limited" : "evidence gathering"}</span>BuildProof application health report</div><h1>{isDecisionReady ? "A decision object for your next deployment." : hasSourceCoverageGap ? "A coverage-limited view—not a release decision." : "A provisional view while the expert teams gather evidence."}</h1><p>Designed to be read by engineering, product, and security together.</p></div>
         <div className="report-header-actions__buttons"><select value={audit.id} onChange={(event) => setRunId(event.target.value)} aria-label="Choose audit report">{runs.map((run) => <option value={run.id} key={run.id}>{run.projectName}{run.isVerification ? " · verification" : ""}</option>)}</select><button type="button" className="button button--quiet" onClick={exportJson}><Download size={16} /> Export JSON</button><button type="button" className="button button--primary" onClick={() => window.print()}><Printer size={16} /> Print / save PDF</button></div>
       </div>
 
@@ -61,12 +74,17 @@ export function ReleaseReport() {
         </header>
 
         <section className="passport-verdict-row">
-          <div className="passport-verdict-copy"><span className="panel-kicker">{isDecisionReady ? "Release decision" : "Application health status"}</span><h2 className={isDecisionReady ? verdict === "DO NOT SHIP" ? "verdict verdict--hold" : verdict === "READY WITH REVIEW" ? "verdict verdict--review" : "verdict verdict--ship" : "verdict verdict--progress"}>{isDecisionReady ? verdict : "EVIDENCE GATHERING"}</h2><p>{isDecisionReady ? verdict === "DO NOT SHIP" ? "Do not deploy until the listed release blockers receive an owner-approved resolution and verification." : verdict === "READY WITH REVIEW" ? "Deployment is possible with explicit owner review of the remaining high-impact signals." : "Evidence supports release approval within the reviewed scope." : "The report remains provisional until each expert team has completed the reading it was authorized to perform."}</p></div>
+          <div className="passport-verdict-copy"><span className="panel-kicker">{isDecisionReady ? "Release decision" : "Application health status"}</span><h2 className={isDecisionReady ? verdict === "DO NOT SHIP" ? "verdict verdict--hold" : verdict === "READY WITH REVIEW" ? "verdict verdict--review" : "verdict verdict--ship" : "verdict verdict--progress"}>{reportStatus}</h2><p>{isDecisionReady ? verdict === "DO NOT SHIP" ? "Do not deploy until the listed release blockers receive an owner-approved resolution and verification." : verdict === "READY WITH REVIEW" ? "Deployment is possible with explicit owner review of the remaining high-impact signals." : "Evidence supports release approval within the reviewed scope." : hasSourceCoverageGap ? "A deployment decision is withheld because repository or integration evidence is required for the selected source-dependent teams." : "The report remains provisional until each expert team has completed the reading it was authorized to perform."}</p></div>
           <div className="passport-score"><span>{isDecisionReady ? "Application health" : "Evidence gathered"}</span><strong>{isDecisionReady ? score : progress.progress}</strong><small>{isDecisionReady ? "out of 100" : "percent mapped"}</small></div>
           <div className="passport-severity"><span><b>{counts.critical}</b>critical</span><span><b>{counts.high}</b>high</span><span><b>{counts.medium}</b>medium</span><span><b>{findings.filter((finding) => finding.status === "resolved").length}</b>resolved</span></div>
         </section>
 
-        <section className="passport-materials"><span className="panel-kicker">Expert team readings</span><div className="passport-materials__bars">{auditDomains.map((domain) => { const Icon = domainIcons[domain.id]; const inScope = domain.categories.some((category) => audit.selectedModules.includes(category)); const assessed = inScope && (isDecisionReady || progress.stageIndex >= auditDomainStageIndex[domain.id]); const value = assessed ? domainReadiness(findings, domain.id) : 0; return <div className="passport-material" key={domain.id}><div><Icon size={15} /><span>{domain.shortLabel}</span><strong>{assessed ? value : "—"}</strong></div><MetricBar value={value} tone={domain.id === "security" ? "rose" : domain.id === "engineering" ? "copper" : "blue"} /></div>; })}</div></section>
+        <section className="passport-materials"><span className="panel-kicker">Five expert team readings</span><div className="passport-materials__bars">{auditDomains.map((domain) => { const Icon = domainIcons[domain.id]; const inScope = domain.categories.some((category) => audit.selectedModules.includes(category)); const sourceLimited = !hasRepositorySource && domainRequiresRepository(domain.id); const assessed = inScope && !sourceLimited && (progress.isComplete || progress.stageIndex >= auditDomainStageIndex[domain.id]); const value = assessed ? domainReadiness(findings, domain.id) : 0; return <div className="passport-material" key={domain.id}><div><Icon size={15} /><span>{domain.shortLabel}</span><strong>{assessed ? value : "—"}</strong></div><MetricBar value={value} tone={domain.tone} /></div>; })}</div></section>
+
+        <section className="passport-coverage-limit">
+          <FileSearch size={18} />
+          <div><span className="panel-kicker">Evidence coverage boundary</span><h3>{hasRepositorySource ? "Repository source is declared; inspection remains scoped to verified access." : "This report is limited to staging-browser evidence."}</h3><p>Staging access can support browser journeys, accessibility, performance, and passive HTTP observations. Private code, cloud configuration, database schema, and CI/CD evidence require a repository or approved integration; those areas must remain unassessed until connected.</p></div>
+        </section>
 
         <section className="passport-blockers"><div className="passport-section-heading"><div><span className="panel-kicker">Blockers before release</span><h3>Evidence that changes the decision</h3></div><ShieldAlert size={19} /></div>{blockers.length ? <div className="passport-blocker-list">{blockers.map((finding) => <div className="passport-blocker" key={finding.id}><SeverityBadge severity={finding.severity} /><div><strong>{finding.title}</strong><p>{finding.impact}</p></div><span>{finding.evidence.length} proof artifacts</span></div>)}</div> : <div className="passport-clear"><Check size={16} />No open critical or high findings in this report.</div>}</section>
 

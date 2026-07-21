@@ -4,7 +4,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { createDemoAudit, createSampleAudit, createVerificationAudit } from "@/lib/demo-data";
 import type { AuditDraft, AuditRun, FindingStatus } from "@/lib/types";
 
-const STORAGE_KEY = "buildproof.audit-runs.v1";
+// The user-facing taxonomy expanded from three teams to five. Use a new demo
+// cache namespace so prior fixtures cannot masquerade as fully assessed runs.
+const STORAGE_KEY = "buildproof.audit-runs.v2";
 
 type AuditContextValue = {
   runs: AuditRun[];

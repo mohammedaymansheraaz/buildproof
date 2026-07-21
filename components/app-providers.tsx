@@ -3,21 +3,22 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { createContext, useContext } from "react";
 import { AuditProvider } from "@/components/audit-provider";
+import type { AuthProvider } from "@/lib/auth-config";
 
-const AuthAvailabilityContext = createContext(false);
+const AuthProviderContext = createContext<AuthProvider>("demo");
 
 export function AppProviders({
   children,
-  clerkEnabled,
+  authProvider,
 }: {
   children: React.ReactNode;
-  clerkEnabled: boolean;
+  authProvider: AuthProvider;
 }) {
   const content = <AuditProvider>{children}</AuditProvider>;
 
   return (
-    <AuthAvailabilityContext.Provider value={clerkEnabled}>
-      {clerkEnabled ? (
+    <AuthProviderContext.Provider value={authProvider}>
+      {authProvider === "clerk" ? (
         <ClerkProvider
           appearance={{
             variables: {
@@ -36,10 +37,10 @@ export function AppProviders({
       ) : (
         content
       )}
-    </AuthAvailabilityContext.Provider>
+    </AuthProviderContext.Provider>
   );
 }
 
-export function useAuthAvailability() {
-  return useContext(AuthAvailabilityContext);
+export function useAuthProvider() {
+  return useContext(AuthProviderContext);
 }

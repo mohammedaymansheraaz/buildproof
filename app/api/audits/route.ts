@@ -6,7 +6,9 @@ import { isDemoAuditMode } from "@/lib/config";
 
 const auditDraftSchema = z.object({
   projectName: z.string().min(1),
-  repositoryUrl: z.string().min(1),
+  // A verified staging URL can support browser evidence without a repository.
+  // Repository-only evidence remains unavailable until source access is connected.
+  repositoryUrl: z.union([z.string().url(), z.literal("")]).default(""),
   branch: z.string().min(1).default("main"),
   stagingUrl: z.string().url(),
   environment: z.enum(["staging", "preview", "production"]),
