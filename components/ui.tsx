@@ -2,12 +2,17 @@ import type { ReactNode } from "react";
 import {
   Accessibility,
   Activity,
+  Bot,
   Cloud,
   Code2,
+  Database,
+  FileSearch,
   Gauge,
   Network,
   Pointer,
+  Rocket,
   ShieldCheck,
+  Workflow,
 } from "lucide-react";
 import type { AuditCategory, FindingStatus, Severity } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -48,6 +53,7 @@ export function FindingStatusBadge({ status }: { status: FindingStatus }) {
 }
 
 const categoryIcons: Record<AuditCategory, typeof Activity> = {
+  product: FileSearch,
   functional: Pointer,
   security: ShieldCheck,
   cloud: Cloud,
@@ -55,6 +61,10 @@ const categoryIcons: Record<AuditCategory, typeof Activity> = {
   accessibility: Accessibility,
   performance: Gauge,
   code: Code2,
+  database: Database,
+  devops: Workflow,
+  ai: Bot,
+  launch: Rocket,
 };
 
 export function CategoryIcon({ category, size = 16 }: { category: AuditCategory; size?: number }) {

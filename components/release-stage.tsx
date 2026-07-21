@@ -4,72 +4,56 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, type ThreeEvent, useFrame } from "@react-three/fiber";
 import { Float, PresentationControls, RoundedBox } from "@react-three/drei";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowUpRight, Cloud, MousePointer2, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, Cloud, FileSearch, MousePointer2, Rocket, ShieldCheck } from "lucide-react";
 import * as THREE from "three";
 import type { ReleaseVerdict } from "@/lib/types";
+import type { AuditDomainId } from "@/lib/audit-domains";
 import { cn } from "@/lib/utils";
 import { ReleaseLens } from "@/components/release-lens";
 
-export type ReleaseStageSurface = "experience" | "engineering" | "security";
+export type ReleaseStageSurface = AuditDomainId;
 
-type Surface = {
+export type ReleaseStageReading = {
   id: ReleaseStageSurface;
   label: string;
-  value: number;
+  value: number | null;
+  assessed: boolean;
+  description: string;
+  tone: "blue" | "sage" | "copper" | "rose";
+};
+
+type Surface = ReleaseStageReading & {
   accent: string;
   position: [number, number, number];
   rotation: [number, number, number];
-  description: string;
 };
 
 type ReleaseStageProps = {
   score: number;
   verdict: ReleaseVerdict;
-  experience: number;
-  engineering: number;
-  security: number;
+  readings: ReleaseStageReading[];
   activeSurface?: ReleaseStageSurface;
   onSurfaceChange?: (surface: ReleaseStageSurface) => void;
   scoreLabel?: string;
   statusLabel?: string;
 };
 
-export function ReleaseStage({ score, verdict, experience, engineering, security, activeSurface: controlledSurface, onSurfaceChange, scoreLabel = "Application health", statusLabel }: ReleaseStageProps) {
+const surfaceLayouts: Record<ReleaseStageSurface, Omit<Surface, keyof ReleaseStageReading>> = {
+  product: { accent: "#9FE8FF", position: [-1.02, 0.94, 0.42], rotation: [0.08, 0.32, -0.12] },
+  experience: { accent: "#8FCB9B", position: [1.06, 0.88, 0.42], rotation: [0.08, -0.34, 0.16] },
+  engineering: { accent: "#D9A15B", position: [-1.09, -0.28, 0.35], rotation: [-0.08, 0.32, -0.13] },
+  security: { accent: "#F9A9A2", position: [1.08, -0.38, 0.26], rotation: [0.07, -0.29, 0.08] },
+  "ai-launch": { accent: "#9FE8FF", position: [0, -1.17, 0.44], rotation: [0.04, 0, 0] },
+};
+
+export function ReleaseStage({ score, verdict, readings, activeSurface: controlledSurface, onSurfaceChange, scoreLabel = "Application health", statusLabel }: ReleaseStageProps) {
   const prefersReducedMotion = useReducedMotion();
   const [canRenderScene, setCanRenderScene] = useState(false);
-  const [activeSurface, setActiveSurface] = useState<ReleaseStageSurface>("experience");
+  const [activeSurface, setActiveSurface] = useState<ReleaseStageSurface>("product");
 
   const surfaces = useMemo<Surface[]>(
-    () => [
-      {
-        id: "experience",
-        label: "Experience",
-        value: experience,
-        accent: "#9FE8FF",
-        position: [0.96, 0.76, 0.42],
-        rotation: [0.08, -0.34, 0.16],
-        description: "Real journeys, UI behavior, and inclusive product access.",
-      },
-      {
-        id: "engineering",
-        label: "Engineering",
-        value: engineering,
-        accent: "#D9A15B",
-        position: [-1.02, -0.72, 0.35],
-        rotation: [-0.08, 0.32, -0.13],
-        description: "API, data, performance, cloud, and delivery intelligence.",
-      },
-      {
-        id: "security",
-        label: "Security",
-        value: security,
-        accent: "#F9A9A2",
-        position: [0.9, -0.92, 0.26],
-        rotation: [0.07, -0.29, 0.08],
-        description: "Authorization, protection, and reliability risk signals.",
-      },
-    ],
-    [engineering, experience, security],
+    () => readings.map((reading) => ({ ...reading, ...surfaceLayouts[reading.id] })),
+    [readings],
   );
 
   useEffect(() => {
@@ -90,7 +74,7 @@ export function ReleaseStage({ score, verdict, experience, engineering, security
   }, [controlledSurface]);
 
   if (!canRenderScene) {
-    return <ReleaseLens score={score} verdict={verdict} functional={experience} security={security} cloud={engineering} functionalLabel="Experience" cloudLabel="Engineering" coreLabel={scoreLabel} verdictLabel={statusLabel} />;
+    return <ReleaseLens score={score} verdict={verdict} readings={readings} coreLabel={scoreLabel} verdictLabel={statusLabel} />;
   }
 
   const selectedSurface = controlledSurface ?? activeSurface;
@@ -142,7 +126,7 @@ export function ReleaseStage({ score, verdict, experience, engineering, security
             whileTap={{ scale: 0.98 }}
           >
             <span>{surface.label}</span>
-            <strong>{surface.value}%</strong>
+            <strong>{surface.assessed ? `${surface.value ?? 0}%` : "—"}</strong>
           </motion.button>
         ))}
       </div>
@@ -159,11 +143,11 @@ export function ReleaseStage({ score, verdict, experience, engineering, security
           transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="release-stage__inspector-icon">
-            {active.id === "security" ? <ShieldCheck size={15} /> : active.id === "engineering" ? <Cloud size={15} /> : <MousePointer2 size={15} />}
+            {active.id === "security" ? <ShieldCheck size={15} /> : active.id === "engineering" ? <Cloud size={15} /> : active.id === "ai-launch" ? <Rocket size={15} /> : active.id === "product" ? <FileSearch size={15} /> : <MousePointer2 size={15} />}
           </div>
           <div>
             <span>{active.label} signal</span>
-            <strong>{active.value}% evidence coverage</strong>
+            <strong>{active.assessed ? `${active.value ?? 0}% verified reading` : "Evidence gathering"}</strong>
             <p>{active.description}</p>
           </div>
           <ArrowUpRight size={15} aria-hidden="true" />

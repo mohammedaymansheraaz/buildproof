@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content="BuildProof Release Atlas landing page prototype" />
+    <title>BuildProof — Release Atlas</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#atlas">Skip to the release atlas</a>
+    <header class="header">
+      <a class="brand" href="../index.html"><span class="brand-orbit" aria-hidden="true"></span><span>BuildProof</span><small>release atlas</small></a>
+      <nav><a href="#atlas">Atlas</a><a href="#layers">Layers</a><a href="#decision">Decision</a></nav>
+      <div class="head-actions"><button data-auth="signin">Sign in</button><button class="primary" data-auth="signup">Register <span>→</span></button></div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-heading">
+        <div class="hero-top"><p class="kicker">A MAP FOR THE MOMENT BEFORE YOU SHIP</p><h1 id="hero-heading">Your application is not a checklist. It is a living system.</h1><p>BuildProof turns the routes, roles, data, infrastructure, and safeguards behind a release into one navigable picture — then asks the right specialists to inspect each part.</p><div class="hero-actions"><button class="primary large" data-auth="signup">Map an authorized app <span>→</span></button><a href="#atlas">Enter the atlas <span>↓</span></a></div></div>
+        <div class="hero-atlas" aria-label="Illustrative application topology" role="img">
+          <div class="atlas-label label-product"><b>PRODUCT SURFACE</b><span>184 mapped components</span></div><div class="atlas-label label-experience"><b>USER JOURNEYS</b><span>12 critical paths</span></div><div class="atlas-label label-engineering"><b>ENGINEERING SYSTEMS</b><span>31 API paths</span></div><div class="atlas-label label-security"><b>TRUST BOUNDARIES</b><span>8 reviewed edges</span></div>
+          <svg viewBox="0 0 840 480" aria-hidden="true"><defs><linearGradient id="atlasFlow" x1="0" x2="1"><stop stop-color="#bdefff" stop-opacity=".1"/><stop offset=".48" stop-color="#bdefff" stop-opacity=".92"/><stop offset="1" stop-color="#e1ad69" stop-opacity=".2"/></linearGradient><filter id="blur"><feGaussianBlur stdDeviation="4"/></filter></defs><g class="atlas-grid"><path d="M53 96H786M53 163H786M53 230H786M53 297H786M53 364H786M136 45V429M247 45V429M358 45V429M469 45V429M580 45V429M691 45V429"/></g><g class="atlas-paths"><path d="M109 115 C206 74 240 157 322 178 S421 90 506 132 S646 240 730 183"/><path d="M109 115 C187 230 247 249 352 252 S511 277 598 336 S669 367 730 365"/><path d="M247 359 C290 294 334 301 385 242 S489 167 561 231 S672 260 730 183"/><path d="M247 359 C343 420 450 382 507 346 S649 316 730 365"/></g><g class="atlas-flares"><path d="M109 115 C206 74 240 157 322 178 S421 90 506 132 S646 240 730 183" filter="url(#blur)"/></g><g class="atlas-nodes"><circle cx="109" cy="115" r="13"/><circle cx="247" cy="359" r="11"/><circle cx="322" cy="178" r="15"/><circle cx="385" cy="242" r="10"/><circle cx="506" cy="132" r="13"/><circle cx="561" cy="231" r="16"/><circle cx="598" cy="336" r="12"/><circle cx="730" cy="183" r="15"/><circle cx="730" cy="365" r="13"/></g></svg>
+          <div class="atlas-key"><i></i> Flow corroborated <i class="warm"></i> Needs review</div>
+        </div>
+      </section>
+
+      <section class="thesis"><span>WHEN A RELEASE IS A SYSTEM,</span><p>the most useful question is not “did we run every test?” It is <strong>“which evidence changes the release decision — and what has not yet been observed?”</strong></p><span>BUILDPROOF KEEPS BOTH VISIBLE.</span></section>
+
+      <section class="atlas-section" id="atlas" aria-labelledby="atlas-heading">
+        <div class="section-heading"><div><p class="kicker">ONE MAP, FIVE READINGS</p><h2 id="atlas-heading">Move from the application surface to the release call.</h2></div><p>Choose an inspection layer. The map stays one whole application while the relevant evidence and agents come into focus.</p></div>
+        <div class="atlas-console">
+          <div class="atlas-controls" id="atlas-controls" role="tablist" aria-label="Audit pillar layers"></div>
+          <div class="atlas-stage"><div class="stage-map" id="stage-map" aria-hidden="true"><span class="map-ring ring-a"></span><span class="map-ring ring-b"></span><span class="map-ring ring-c"></span><span class="stage-node node-a"></span><span class="stage-node node-b"></span><span class="stage-node node-c"></span><span class="stage-node node-d"></span><span class="stage-node node-e"></span><svg viewBox="0 0 800 390"><path d="M129 94 C232 67 255 159 337 176 S433 110 507 145 S628 233 693 184 M129 94 C192 197 288 228 391 222 S513 286 590 312 S654 307 693 284 M218 303 C300 322 360 283 424 227 S538 179 612 223"/></svg></div><div class="stage-readout" id="stage-readout" aria-live="polite"></div></div>
+          <div class="atlas-footer"><span id="atlas-caption">APPLICATION TOPOLOGY / MOCK EVIDENCE</span><span>82% PLANNED COVERAGE</span><span>AUTHORIZED SCOPE ONLY</span></div>
+        </div>
+      </section>
+
+      <section class="layers" id="layers" aria-labelledby="layers-heading">
+        <div class="layers-head"><p class="kicker">THE SPECIALIST SYSTEM</p><h2 id="layers-heading">Ten agents, grouped so the story remains understandable.</h2><p>Every agent keeps a distinct job. The interface presents five plain-language pillars, so a customer understands the audit without losing the depth underneath.</p></div>
+        <div class="layer-list" id="layer-list"></div>
+      </section>
+
+      <section class="journey" aria-labelledby="journey-heading">
+        <div class="journey-title"><p class="kicker">A TRACEABLE RELEASE PATH</p><h2 id="journey-heading">The release decision is the last point on the map, not the first claim.</h2></div>
+        <div class="journey-track"><article><span>01</span><h3>Declare the boundary</h3><p>Repository, staging target, user role, and authorization define the safe inspection perimeter.</p></article><article><span>02</span><h3>Build a product map</h3><p>Critical journeys and dependencies give each check an intended outcome and an owner.</p></article><article><span>03</span><h3>Gather connected evidence</h3><p>Browser replay, code, request traces, configuration signals, and scoped checks corroborate the actual state.</p></article><article><span>04</span><h3>Make the release call</h3><p>The final report names holds, confidence, gaps, recommended fixes, and the re-audit condition.</p></article></div>
+      </section>
+
+      <section class="decision" id="decision" aria-labelledby="decision-heading">
+        <div class="decision-card"><div class="decision-meta"><span>RELEASE BRIEF / SAMPLE</span><span>FINANCE / CTO AGENT</span></div><div class="decision-main"><div class="decision-score"><strong>78</strong><small>application health / 100</small></div><div><h2 id="decision-heading">Conditional release.</h2><p>Proceed after three holds are resolved: an invite retry state, an authorization review, and confirmed rollback evidence.</p></div></div><div class="decision-grid"><div><small>WHAT WE KNOW</small><b>82% planned evidence coverage across 12 critical journeys.</b></div><div><small>WHAT NEEDS ACTION</small><b class="amber">3 holds / 5 suggested owners / re-audit after merge.</b></div><div><small>WHAT REMAINS UNKNOWN</small><b>Private runtime systems not connected to the approved scope.</b></div></div></div>
+        <aside class="finding"><header><span>SEC-021</span><span class="hold">HOLD · HIGH CONFIDENCE</span></header><h3>Workspace invitation authorization needs review.</h3><p>Observed in approved staging with a scoped account. Evidence is linked to the role boundary and request trace.</p><footer><span>Security Engineer Agent</span><button>View evidence ↗</button></footer></aside>
+      </section>
+
+      <section class="limits"><div><p class="kicker">THE BOUNDARY IS VISIBLE</p><h2>Responsible assurance is explicit about its limits.</h2></div><div class="limit-grid"><article><span>01</span><h3>Authorized targets</h3><p>BuildProof assesses only the repositories, environments, and accounts the customer is entitled to test.</p></article><article><span>02</span><h3>Observed, not imagined</h3><p>A score includes coverage and uncertainty; it cannot prove the absence of every defect or vulnerability.</p></article><article><span>03</span><h3>Safe by default</h3><p>High-risk security work is bounded and non-destructive unless a customer explicitly authorizes a controlled escalation.</p></article><article><span>04</span><h3>Reviewable change</h3><p>A future fix agent can draft a patch or review request, never make an unseen production change.</p></article></div></section>
+
+      <section class="final-cta"><div class="final-map" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><p class="kicker">START WITH A MAP, NOT A BLACK BOX</p><h2>Give the next release a shape everyone can trust.</h2><p>Register to connect an authorized project. The dashboard begins with audit scope, then keeps the evidence and final decision in one place.</p><div class="hero-actions"><button class="primary large" data-auth="signup">Register to start <span>→</span></button><button data-auth="signin">Sign in</button></div></section>
+    </main>
+
+    <footer class="footer"><a href="../index.html">← Prototype lab</a><span>Release Atlas / static mockup / no live audit</span><a href="../PRODUCT-BRIEF.md">Full product brief</a></footer>
+
+    <dialog class="auth" id="auth-dialog" aria-labelledby="auth-title"><button class="close" data-close aria-label="Close">×</button><span class="auth-node"></span><p class="kicker" id="auth-kicker">SECURE ACCOUNT ACCESS</p><h2 id="auth-title">Enter BuildProof.</h2><p id="auth-copy">Sign in to return to your audit workspace and release atlas.</p><form><label>Email<input type="email" autocomplete="email" placeholder="you@company.com" /></label><label>Password<input type="password" autocomplete="current-password" placeholder="••••••••" /></label><button class="primary" type="button">Continue <span>→</span></button><button class="google" type="button"><b>G</b> Continue with Google</button></form><small>Reference prototype only — no credentials are submitted.</small></dialog>
+    <script src="./script.js"></script>
+  </body>
+</html>

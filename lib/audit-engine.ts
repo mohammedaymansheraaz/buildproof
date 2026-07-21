@@ -12,10 +12,10 @@ import { getDomainForFinding, type AuditDomainId } from "@/lib/audit-domains";
 export const AUDIT_STAGES: AuditStage[] = [
   {
     id: "understand",
-    label: "Map the application",
-    shortLabel: "Understand",
-    description: "Mapping product intent, routes, dependencies, permission boundaries, and the approved target.",
-    activity: "Mapping the application and its approved audit surface.",
+    label: "Build product intelligence",
+    shortLabel: "Product",
+    description: "Mapping product intent, critical journeys, routes, dependencies, permission boundaries, and the approved target.",
+    activity: "Building the product map and approved audit surface.",
   },
   {
     id: "experience",
@@ -26,10 +26,10 @@ export const AUDIT_STAGES: AuditStage[] = [
   },
   {
     id: "engineering",
-    label: "Analyze engineering systems",
+    label: "Analyze engineering & scale",
     shortLabel: "Engineering",
-    description: "Tracing API behavior, performance, data flow, cloud posture, and delivery readiness.",
-    activity: "Correlating user actions with APIs, data, infrastructure, and deployment signals.",
+    description: "Tracing API behavior, performance, data flow, cloud posture, database signals, and delivery readiness.",
+    activity: "Correlating user actions with APIs, data, infrastructure, databases, and deployment signals.",
   },
   {
     id: "security",
@@ -39,11 +39,18 @@ export const AUDIT_STAGES: AuditStage[] = [
     activity: "Explaining authorized security and reliability signals with evidence.",
   },
   {
+    id: "ai-launch",
+    label: "Assess AI & launch readiness",
+    shortLabel: "AI & launch",
+    description: "Running AI-specific evaluation only when an AI surface is declared, then preparing cost-aware CTO decision evidence.",
+    activity: "Checking conditional AI scope and assembling launch-readiness evidence.",
+  },
+  {
     id: "report",
-    label: "Assemble application health report",
-    shortLabel: "Health report",
-    description: "Combining expert readings, severity, proof, and recommendations into a decision-ready report.",
-    activity: "Assembling a decision-ready application health report.",
+    label: "Assemble CTO-level report",
+    shortLabel: "CTO report",
+    description: "Combining the five expert readings, severity, proof, ownership, cost context, and recommendations into a decision-ready report.",
+    activity: "Assembling the CTO-level launch decision report.",
   },
 ];
 

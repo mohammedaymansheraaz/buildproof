@@ -1,4 +1,5 @@
 export const auditCategories = [
+  "product",
   "functional",
   "security",
   "cloud",
@@ -6,9 +7,20 @@ export const auditCategories = [
   "accessibility",
   "performance",
   "code",
+  "database",
+  "devops",
+  "ai",
+  "launch",
 ] as const;
 
 export type AuditCategory = (typeof auditCategories)[number];
+
+/**
+ * The concise, user-facing audit taxonomy. Categories remain the internal
+ * capabilities and evidence sources; domains are the expert teams users see.
+ */
+export const auditDomainIds = ["product", "experience", "engineering", "security", "ai-launch"] as const;
+export type AuditDomainId = (typeof auditDomainIds)[number];
 
 export const severities = ["critical", "high", "medium", "low", "info"] as const;
 export type Severity = (typeof severities)[number];
@@ -47,7 +59,7 @@ export type Finding = {
   id: string;
   auditRunId: string;
   /** Product-level audit team responsible for this signal. `category` remains the underlying capability/source. */
-  primaryDomain?: "experience" | "engineering" | "security";
+  primaryDomain?: AuditDomainId;
   category: AuditCategory;
   severity: Severity;
   confidence: "high" | "medium" | "low";
@@ -60,6 +72,8 @@ export type Finding = {
   reproductionSteps: string[];
   recommendation: string;
   evidence: Evidence[];
+  /** This signal relies on approved private repository or integration access. */
+  requiresRepository?: boolean;
   autoFixEligible: boolean;
   discoveredAtStage: number;
 };
@@ -81,6 +95,54 @@ export type AuditRun = {
   finishedAt?: string;
   status: AuditStatus;
   isVerification?: boolean;
+  report?: AuditReport;
+};
+
+export type AuditReport = {
+  id: string;
+  verdict: "ship" | "review" | "hold" | "incomplete";
+  overallScore: number | null;
+  generatedAt: string | null;
+  report: {
+    title?: string;
+    generatedFrom?: string;
+    verdict?: ReleaseVerdict;
+    score?: number;
+    blockerCount?: number;
+    coverageLimits?: string[];
+    aiSynthesis?: AgenticAuditReport;
+    [key: string]: unknown;
+  };
+};
+
+export type AgenticAuditSection = {
+  domain: AuditDomainId;
+  title: string;
+  agents: string[];
+  score: number;
+  summary: string;
+  keySignals: string[];
+  recommendations: string[];
+  limitations: string[];
+  evidenceIds: string[];
+};
+
+export type AgenticAuditReport = {
+  status: "generated" | "skipped" | "failed";
+  provider?: string;
+  model?: string;
+  source?: "user" | "deployment";
+  connectionId?: string;
+  generatedAt: string;
+  promptVersion: string;
+  evidenceCount: number;
+  specialistSections: AgenticAuditSection[];
+  ctoSummary: string;
+  verdictNarrative: string;
+  criticalBlockers: string[];
+  nextActions: string[];
+  limitations: string[];
+  error?: string;
 };
 
 export type AuditDraft = {

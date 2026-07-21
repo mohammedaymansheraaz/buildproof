@@ -7,6 +7,7 @@ import {
   Aperture,
   ArrowUpRight,
   Bot,
+  BrainCircuit,
   ChevronDown,
   Command,
   FileCheck2,
@@ -30,6 +31,7 @@ const navItems = [
   { href: "/findings", label: "Findings", icon: ShieldAlert, match: (path: string) => path.startsWith("/findings") },
   { href: "/fix-center", label: "Fix Center", icon: Sparkles, match: (path: string) => path.startsWith("/fix-center") },
   { href: "/reports", label: "Reports", icon: FileCheck2, match: (path: string) => path.startsWith("/reports") },
+  { href: "/models", label: "AI Models", icon: BrainCircuit, match: (path: string) => path.startsWith("/models") },
   { href: "/integrations", label: "Integrations", icon: Bot, match: (path: string) => path.startsWith("/integrations") },
 ];
 
@@ -38,6 +40,7 @@ const quickLinks = [
   { href: "/findings", label: "Investigate findings", hint: "F" },
   { href: "/fix-center", label: "Open Fix Center", hint: "X" },
   { href: "/reports", label: "View release report", hint: "R" },
+  { href: "/models", label: "Manage AI models", hint: "M" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {

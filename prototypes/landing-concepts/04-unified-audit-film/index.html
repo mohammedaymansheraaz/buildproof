@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content="BuildProof unified cinematic landing-page prototype" />
+    <title>BuildProof — The Audit Film</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#audit-film">Skip to the audit film</a>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="ambient-field" aria-hidden="true"><i></i><i></i><i></i></div>
+
+    <header class="site-header">
+      <a class="brand" href="../index.html" aria-label="BuildProof prototype lab">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>BuildProof</span><small>the audit film</small>
+      </a>
+      <nav aria-label="Landing page navigation">
+        <a href="#overview">System</a>
+        <a href="#audit-film">Inspection</a>
+        <a href="#release">Verdict</a>
+      </nav>
+      <div class="header-actions">
+        <button class="button button-quiet" data-auth="signin">Sign in</button>
+        <button class="button button-signal" data-auth="signup">Register <span>↗</span></button>
+      </div>
+    </header>
+
+    <aside class="agent-rail" aria-label="Specialist agent execution order">
+      <div class="rail-head"><span>LIVE TRACE</span><b id="rail-counter">01</b></div>
+      <div class="rail-line"><i id="rail-fill"></i></div>
+      <ol id="agent-rail-list"></ol>
+      <p>01 → 10<br /><span>execution order</span></p>
+    </aside>
+
+    <main>
+      <section class="hero scene" id="top" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><i></i> Release assurance for teams that ship</p>
+          <h1 id="hero-title">Know what your application can <em>survive</em> before your customers find out.</h1>
+          <p class="lede">BuildProof coordinates a specialist engineering team around an authorized application, then turns product behavior, infrastructure signals, and security evidence into one accountable release decision.</p>
+          <div class="hero-actions">
+            <button class="button button-signal button-large" data-auth="signup">Start an audit <span>→</span></button>
+            <a class="text-action" href="#overview">Enter the system <span>↓</span></a>
+          </div>
+          <p class="scope-note">For repositories, staging targets, and test accounts you own or are explicitly authorized to assess.</p>
+        </div>
+
+        <div class="hero-stage parallax-stage" role="img" aria-label="Illustrative application health instrument">
+          <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div><div class="hero-orbit orbit-three"></div>
+          <div class="core-shell">
+            <div class="core-grid"></div><div class="core-aura"></div>
+            <div class="core-reading"><b>78</b><span>application<br />health</span></div>
+          </div>
+          <article class="floating-readout readout-one"><span>evidence coverage</span><b>82%</b><i>corroborated scope</i></article>
+          <article class="floating-readout readout-two"><span>critical journeys</span><b>12</b><i>priority paths</i></article>
+          <article class="floating-readout readout-three hold"><span>release holds</span><b>03</b><i>need action</i></article>
+          <div class="hero-trace"><span></span><i></i><i></i><i></i><b>application → evidence → decision</b></div>
+        </div>
+
+        <div class="hero-aside glass-card">
+          <span class="eyebrow compact"><i></i> SAMPLE READING</span>
+          <strong>payscope-web</strong>
+          <p>Authorized staging scope<br />12 priority journeys · 8 trust boundaries</p>
+          <div class="mini-verdict"><span>CONDITIONAL</span><b>3 holds</b></div>
+        </div>
+      </section>
+
+      <section class="overview" id="overview" aria-labelledby="overview-title">
+        <div class="overview-copy">
+          <p class="eyebrow"><i></i> One system, not ten disconnected tools</p>
+          <h2 id="overview-title">The audit stays simple for people. The depth stays inside the evidence.</h2>
+          <p>Start with the four moments a release team actually needs to understand. As you scroll, the five working pillars expand into the exact specialists, readings, and evidence that produce the verdict.</p>
+        </div>
+        <div class="overview-grid" id="chapter-nav" aria-label="Audit chapters"></div>
+        <div class="scope-strip">
+          <span><b>01</b> connect an authorized repository or target</span>
+          <span><b>02</b> understand the product before judging it</span>
+          <span><b>03</b> inspect safely, corroborate, decide</span>
+        </div>
+      </section>
+
+      <section class="scope-gate scene" aria-labelledby="scope-title">
+        <div class="scope-glow" aria-hidden="true"></div>
+        <div class="scope-copy">
+          <p class="eyebrow"><i></i> A scope gate, before the signal starts</p>
+          <h2 id="scope-title">Good assurance says what it can see—and what it cannot.</h2>
+          <p>BuildProof begins with explicit permission, a chosen target, and visible coverage boundaries. A repository or browser URL never becomes an excuse to imply hidden access.</p>
+        </div>
+        <div class="scope-console glass-card">
+          <header><span class="pulse"></span> AUDIT INPUT / ILLUSTRATIVE</header>
+          <div class="scope-inputs">
+            <div><small>REPOSITORY</small><b>github.com/acme/payscope-web</b><span>approved connection</span></div>
+            <div><small>TEST TARGET</small><b>staging.payscope.app</b><span>safe browser scope</span></div>
+            <div><small>AUTHORIZATION</small><b>confirmed by owner</b><span>non-destructive checks</span></div>
+          </div>
+          <footer><span>coverage plan ready</span><b>READ-ONLY BY DEFAULT</b></footer>
+        </div>
+        <aside class="scope-limit glass-card"><b>Visible limit</b><p>Private cloud settings, hidden services, and production data require an approved connection. Unknown is a valid audit result.</p></aside>
+      </section>
+
+      <div id="audit-film" class="audit-film" aria-label="Cinematic BuildProof audit story">
+        <section class="chapter chapter-product" id="product" data-chapter="product" data-first-agent="1" data-last-agent="1" aria-labelledby="product-title">
+          <div class="chapter-stage scene parallax-stage">
+            <div class="chapter-topline"><span>CHAPTER 01</span><i></i><b>PRODUCT INTELLIGENCE</b><small>agent 01</small></div>
+            <div class="chapter-intro left-panel">
+              <p class="eyebrow"><i></i> Start with intent</p>
+              <h2 id="product-title">Before testing a product, learn what it is trying to become.</h2>
+              <p>Product Understanding maps roles, surfaces, critical journeys, dependencies, and the stated release boundary. The rest of the audit gets a shared map instead of ten isolated guesses.</p>
+              <div class="agent-cluster" data-cluster="product"></div>
+            </div>
+            <div class="transform-stage product-map-stage" aria-label="Illustrative product topology">
+              <div class="map-halo halo-a"></div><div class="map-halo halo-b"></div>
+              <svg class="map-links" viewBox="0 0 800 470" aria-hidden="true"><path d="M125 137C225 89 274 142 371 207S523 156 669 128M125 137C192 252 289 296 398 261S555 283 669 340M238 362C329 339 367 307 433 235S588 214 669 128M238 362C356 419 498 397 584 349S630 344 669 340"/><circle cx="259" cy="124" r="4"/><circle cx="495" cy="184" r="4"/><circle cx="345" cy="282" r="4"/></svg>
+              <article class="map-node node-signin"><span>01</span><b>Sign in</b><small>role boundary</small></article>
+              <article class="map-node node-workspace"><span>02</span><b>Workspace</b><small>core surface</small></article>
+              <article class="map-node node-invite"><span>03</span><b>Invite</b><small>critical flow</small></article>
+              <article class="map-node node-api"><span>04</span><b>API</b><small>service edge</small></article>
+              <article class="map-node node-data"><span>05</span><b>Data</b><small>trust boundary</small></article>
+              <div class="map-caption"><i></i> PRODUCT MAP / EVIDENCE SPINE</div>
+            </div>
+            <aside class="chapter-metrics right-panel glass-card">
+              <span class="eyebrow compact"><i></i> MAP OUTPUT</span>
+              <div><b data-count="184">184</b><span>mapped surfaces</span></div>
+              <div><b data-count="12">12</b><span>priority journeys</span></div>
+              <div><b data-count="8">8</b><span>trust boundaries</span></div>
+              <p>Every later signal connects to one of these known surfaces or clearly states that coverage is missing.</p>
+            </aside>
+            <div class="handoff-line"><span>roles + journeys + dependencies</span><i></i><b>the interface can now be experienced</b></div>
+          </div>
+        </section>
+
+        <section class="chapter chapter-experience" id="experience" data-chapter="experience" data-first-agent="2" data-last-agent="3" aria-labelledby="experience-title">
+          <div class="chapter-stage scene parallax-stage">
+            <div class="chapter-topline"><span>CHAPTER 02</span><i></i><b>APPLICATION EXPERIENCE &amp; QUALITY</b><small>agents 02–03</small></div>
+            <div class="chapter-intro left-panel">
+              <p class="eyebrow"><i></i> The user’s point of view</p>
+              <h2 id="experience-title">A beautiful surface means nothing if a real person cannot finish the journey.</h2>
+              <p>UI/UX and Functional QA move through the same flow together: clarity, keyboard behavior, interaction state, errors, recovery, and the final outcome all need evidence.</p>
+              <div class="agent-cluster" data-cluster="experience"></div>
+            </div>
+            <div class="transform-stage journey-stage" aria-label="Illustrative browser journey evidence">
+              <article class="paper-card paper-one"><span>UX REVIEW</span><b>Does the task explain itself?</b><i>labels · focus · hierarchy</i></article>
+              <article class="browser-card">
+                <header><i></i><i></i><i></i><span>staging.payscope.app/workspace/invite</span></header>
+                <div class="browser-body"><div class="browser-nav"></div><div class="browser-panel"><small>INVITE A TEAMMATE</small><b>maria@acme.com</b><span>Role: member</span><button>Send invitation</button></div><div class="browser-cursor"></div><em>retry state not confirmed</em></div>
+              </article>
+              <article class="paper-card paper-two"><span>FUNCTIONAL QA</span><b>Can the flow recover after retry?</b><i>state · request · outcome</i></article>
+              <div class="journey-ribbon"><i></i><span>sign in</span><b>→</b><span>invite</span><b>→</b><span>accept</span><b>→</b><span>workspace</span></div>
+            </div>
+            <aside class="experience-evidence right-panel glass-card">
+              <span class="eyebrow compact"><i></i> EVIDENCE THREAD</span>
+              <small>EXP-014 · CAUTION / HIGH CONFIDENCE</small>
+              <h3>Invite acceptance does not retain a consistent state after retry.</h3>
+              <p><b>Observed</b> Browser replay + request trace after a second refresh.</p>
+              <p><b>Action</b> Make acceptance idempotent and add retry/reload coverage.</p>
+              <footer><span>9 / 12 journeys covered</span><b>PRODUCT ENG.</b></footer>
+            </aside>
+            <div class="handoff-line"><span>human journey + browser evidence</span><i></i><b>follow the request beneath the surface</b></div>
+          </div>
+        </section>
+
+        <section class="chapter chapter-engineering" id="engineering" data-chapter="engineering" data-first-agent="4" data-last-agent="6" aria-labelledby="engineering-title">
+          <div class="chapter-stage scene parallax-stage">
+            <div class="chapter-topline"><span>CHAPTER 03</span><i></i><b>ENGINEERING PERFORMANCE &amp; INFRASTRUCTURE</b><small>agents 04–06 · capability 08</small></div>
+            <div class="engineering-left left-panel glass-card">
+              <p class="eyebrow"><i></i> Descend through the request</p>
+              <h2 id="engineering-title">The screen is only the first place the application can become fragile.</h2>
+              <div class="performance-trace"><header><span class="pulse"></span> PERFORMANCE TRACE</header><div class="trace-line"><i></i><i></i><i></i><i></i></div><div><span>Browser</span><b>480 ms</b></div><div><span>API</span><b>211 ms</b></div><div><span>Data</span><b>143 ms</b></div><footer>p75 page load <b>2.8 s</b></footer></div>
+              <div class="agent-cluster" data-cluster="engineering"></div>
+            </div>
+            <div class="transform-stage engineering-stage" aria-label="Illustrative infrastructure topology">
+              <div class="system-level level-browser"><span>browser</span><i>user interaction</i></div>
+              <div class="system-level level-api"><span>api / services</span><i>31 paths</i></div>
+              <div class="system-level level-worker"><span>workers / queue</span><i>delivery signals</i></div>
+              <div class="system-level level-db"><span>database</span><i>8 / 9 paths observed</i></div>
+              <svg class="system-links" viewBox="0 0 700 520" aria-hidden="true"><path d="M350 74V140M350 216V280M350 356V422M178 178H522M218 319H482"/><circle cx="350" cy="108" r="6"/><circle cx="350" cy="248" r="6"/><circle cx="350" cy="389" r="6"/></svg>
+              <div class="request-particle p-one"></div><div class="request-particle p-two"></div><div class="request-particle p-three"></div>
+              <p>REQUEST TOPOLOGY / ILLUSTRATIVE</p>
+            </div>
+            <aside class="engineering-right right-panel">
+              <article class="glass-card delivery-card"><span class="eyebrow compact"><i></i> DELIVERY READINESS</span><b>DevOps Engineer</b><p>Capability group: Engineering Performance &amp; Infrastructure.</p><div><span>CI checks</span><i class="pass">pass</i></div><div><span>Rollback evidence</span><i class="caution">open</i></div><div><span>Environment separation</span><i class="pass">observed</i></div><small>Its verification occurs after the security gate in the ordered release trace.</small></article>
+              <article class="glass-card data-card"><span>DATABASE SIGNAL</span><b>1 data path needs review</b><p>Observed evidence connects latency to a specific request and owner, not a generic score.</p></article>
+            </aside>
+            <div class="handoff-line"><span>performance + services + data + delivery</span><i></i><b>test the trust boundary before release operations</b></div>
+          </div>
+        </section>
+
+        <section class="chapter chapter-security" id="security" data-chapter="security" data-first-agent="7" data-last-agent="8" aria-labelledby="security-title">
+          <div class="chapter-stage scene parallax-stage">
+            <div class="chapter-topline"><span>CHAPTER 04</span><i></i><b>SECURITY &amp; RELIABILITY</b><small>agent 07 → release operation 08</small></div>
+            <div class="chapter-intro left-panel">
+              <p class="eyebrow"><i></i> Trust has a boundary</p>
+              <h2 id="security-title">Security intelligence should make risk more legible, not more theatrical.</h2>
+              <p>Authorized checks examine authentication, authorization, data protection, and exposure in the configured scope. A risk is only useful when it carries evidence, confidence, and a safe next action.</p>
+              <div class="agent-cluster" data-cluster="security"></div>
+            </div>
+            <div class="transform-stage trust-stage" aria-label="Illustrative authorization boundary review">
+              <div class="trust-ring ring-one"></div><div class="trust-ring ring-two"></div><div class="trust-ring ring-three"></div>
+              <div class="access-core"><span>AUTHORIZATION</span><b>8</b><small>trust boundaries</small></div>
+              <article class="access-sheet"><header><span>ROLE</span><span>workspace:read</span><span>invite:write</span></header><div><b>member</b><i class="pass">✓</i><i class="hold">!</i></div><div><b>admin</b><i class="pass">✓</i><i class="pass">✓</i></div><div><b>viewer</b><i class="pass">✓</i><i>—</i></div></article>
+              <p class="trust-caption">SAFE, AUTHORIZED REVIEW / NO DESTRUCTIVE ACTIONS</p>
+            </div>
+            <aside class="security-evidence right-panel glass-card">
+              <span class="eyebrow compact"><i></i> SEC-021</span>
+              <div class="hold-label">HOLD · HIGH CONFIDENCE</div>
+              <h3>Workspace invitation authorization needs review.</h3>
+              <p>Observed with a scoped account in approved staging. Evidence links the role boundary to a request trace.</p>
+              <div class="security-stats"><span><b>14</b> safe checks</span><span><b>01</b> priority hold</span></div>
+              <footer>Security gate complete <b>→ DevOps verification</b></footer>
+            </aside>
+            <div class="handoff-line"><span>authorization evidence + release gate</span><i></i><b>deployment readiness and launch intelligence converge</b></div>
+          </div>
+        </section>
+
+        <section class="chapter chapter-launch" id="release" data-chapter="launch" data-first-agent="9" data-last-agent="10" aria-labelledby="launch-title">
+          <div class="chapter-stage scene parallax-stage">
+            <div class="chapter-topline"><span>CHAPTER 05</span><i></i><b>AI &amp; LAUNCH READINESS</b><small>agent 09 optional · agent 10 verdict</small></div>
+            <div class="launch-left left-panel">
+              <p class="eyebrow"><i></i> Evidence becomes a decision</p>
+              <h2 id="launch-title">A release report is a handoff—not the end of the audit.</h2>
+              <p>For AI-enabled products, the optional evaluation layer measures quality, safety, reliability, and cost. Then the Finance / CTO perspective turns every confirmed signal into a clear release posture, owner, and re-audit condition.</p>
+              <div class="agent-cluster" data-cluster="launch"></div>
+              <article class="ai-note glass-card"><span>OPTIONAL AI EVALUATION</span><p>Only activates when the product uses AI features. Missing AI scope is shown as missing—not faked.</p></article>
+            </div>
+            <div class="transform-stage verdict-stage" aria-label="Illustrative CTO-level release report">
+              <article class="verdict-sheet sheet-back"><span>OBSERVABILITY</span><b>coverage gaps</b></article>
+              <article class="verdict-sheet sheet-middle"><span>REMEDIATION</span><b>5 suggested owners</b></article>
+              <article class="verdict-sheet sheet-front"><header><span>BUILDPROOF / RELEASE BRIEF</span><b>ILLUSTRATIVE</b></header><div class="verdict-score"><strong>78</strong><small>application health / 100</small></div><div class="verdict-summary"><span>CONDITIONAL RELEASE</span><h3>Ship after three holds are resolved.</h3><p>Invite retry, authorization review, and rollback evidence remain open.</p></div><footer><span>3 holds</span><span>5 owners</span><span>re-audit after merge</span></footer></article>
+              <div class="verdict-convergence"><i></i><i></i><i></i><b>evidence → accountability → decision</b></div>
+            </div>
+            <aside class="cto-output right-panel glass-card">
+              <span class="eyebrow compact"><i></i> FINAL CTO-LEVEL REPORT</span>
+              <p><b>What we know</b> 82% planned evidence coverage across 12 critical journeys.</p>
+              <p><b>What needs action</b> Three holds, five suggested owners, re-audit after merge.</p>
+              <p><b>What remains unknown</b> Private runtime systems not connected to the approved scope.</p>
+              <button class="text-button">View sample report <span>↗</span></button>
+            </aside>
+          </div>
+        </section>
+      </div>
+
+      <section class="trust-footer" aria-labelledby="trust-title">
+        <div><p class="eyebrow"><i></i> The boundary remains visible</p><h2 id="trust-title">Useful assurance is specific about its limits.</h2></div>
+        <div class="trust-principles"><article><b>Authorized targets</b><p>Only approved repositories, environments, and accounts are assessed.</p></article><article><b>Observed, not imagined</b><p>Scores include coverage and uncertainty; they cannot prove every defect is absent.</p></article><article><b>Reviewable change</b><p>A future fix agent may draft a patch or review request—never silently alter production.</p></article></div>
+      </section>
+
+      <section class="closing scene" aria-labelledby="closing-title">
+        <div class="closing-map" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <p class="eyebrow"><i></i> Your next release, with a record</p>
+        <h2 id="closing-title">Bring the whole application into focus.</h2>
+        <p>Register, connect an authorized project, and begin with visible scope. BuildProof keeps the evidence, accountability, and release decision in one place.</p>
+        <div class="hero-actions"><button class="button button-signal button-large" data-auth="signup">Register to start <span>→</span></button><button class="button button-quiet" data-auth="signin">I already have an account</button></div>
+      </section>
+    </main>
+
+    <footer class="site-footer"><a href="../index.html">← Prototype lab</a><span>Unified audit film · mock evidence only · no live audit</span><a href="../PRODUCT-BRIEF.md">Full product brief</a></footer>
+
+    <dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-title">
+      <button class="dialog-close" data-close-auth aria-label="Close">×</button>
+      <div class="auth-seal" aria-hidden="true"></div>
+      <p class="eyebrow"><i></i> <span id="auth-kicker">Secure account access</span></p>
+      <h2 id="auth-title">Enter the audit workspace.</h2>
+      <p id="auth-copy">Create a BuildProof account to connect an authorized repository and begin a scoped audit.</p>
+      <form><label>Email address<input type="email" autocomplete="email" placeholder="you@company.com" /></label><label>Password<input type="password" autocomplete="current-password" placeholder="••••••••" /></label><button class="button button-signal" type="button">Continue <span>→</span></button><button class="oauth-button" type="button"><b>G</b> Continue with Google</button></form>
+      <small>Prototype only — no credentials are submitted.</small>
+    </dialog>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

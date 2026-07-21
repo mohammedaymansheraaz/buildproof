@@ -11,6 +11,10 @@
 .env.local
 .env*.local
 
+# Local integration notes may contain credentials. Keep private setup notes out of Git.
+supabase.md
+*.secrets.md
+
 # logs
 npm-debug.log*
 yarn-debug.log*

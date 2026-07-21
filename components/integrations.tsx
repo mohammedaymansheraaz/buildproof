@@ -46,7 +46,7 @@ export function Integrations() {
   return (
     <div className="page page--integrations">
       <div className="page-heading page-heading--split">
-        <div><div className="eyebrow"><span className="demo-chip">safe by default</span>Integration control plane</div><h1>Connect capability only when you are ready to own it.</h1><p>BuildProof’s local demo works without keys. Production services are explicit, server-only, and independently observable.</p></div>
+        <div><div className="eyebrow"><span className="demo-chip">safe by default</span>Integration control plane</div><h1>Connect capability only when you are ready to own it.</h1><p>BuildProof keeps privileged services explicit, server-only, and independently observable.</p></div>
         <div className={cn("integration-mode", health?.mode === "connected" && "integration-mode--connected")}><span>{health?.mode === "connected" ? <Check size={15} /> : <LockKeyhole size={15} />}</span>{health?.mode === "connected" ? "Partially connected" : "Demo mode active"}</div>
       </div>
 
@@ -60,7 +60,7 @@ export function Integrations() {
         })}
       </div>
 
-      <GlassPanel className="integration-runbook" tone="mist"><KeyRound size={18} /><div><span className="panel-kicker">Configuration runbook</span><strong>Use the documented environment contract in <code>.env.example</code>. Blank keys never prevent the local demo from loading.</strong></div></GlassPanel>
+      <GlassPanel className="integration-runbook" tone="mist"><KeyRound size={18} /><div><span className="panel-kicker">Configuration runbook</span><strong>Use the documented environment contract in <code>.env.example</code>. Supabase keys are required for real authenticated audit storage.</strong></div></GlassPanel>
 
       {selected ? <div className="integration-drawer-backdrop" role="presentation" onMouseDown={() => setSelected(undefined)}><div className="integration-drawer" role="dialog" aria-modal="true" aria-label={`${selected.title} setup`} onMouseDown={(event) => event.stopPropagation()}><button className="icon-button integration-drawer__close" type="button" onClick={() => setSelected(undefined)} aria-label="Close integration setup"><X size={17} /></button><span className="integration-drawer__icon"><selected.icon size={23} /></span><span className="panel-kicker">Configure {selected.title}</span><h2>Keep credentials off the client.</h2><p>{selected.detail}</p><div className="env-list">{selected.env.map((name) => <code key={name}>{name}=</code>)}</div><div className="integration-drawer__note"><LockKeyhole size={16} />Add these values to your private deployment environment, never to a public client variable.</div></div></div> : null}
     </div>

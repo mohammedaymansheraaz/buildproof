@@ -48,8 +48,8 @@ export function FixCenter() {
     return <EmptyState title="No release fixes are ready" detail="Run an audit first, then BuildProof will collect review-ready remediation briefs here." action={<Link href="/audits/new" className="button button--primary">Start audit <ArrowRight size={16} /></Link>} />;
   }
 
-  function verifyFix() {
-    const id = rerunAudit(audit.id);
+  async function verifyFix() {
+    const id = await rerunAudit(audit.id);
     if (id) router.push(`/audits/${id}`);
   }
 
@@ -106,7 +106,7 @@ export function FixCenter() {
                   <button type="button" className="button button--primary" onClick={() => setGithubNotice(true)}><GitPullRequest size={16} /> Create draft PR</button>
                 </div>
               ) : null}
-              {githubNotice ? <div className="integration-notice"><GitPullRequestDraft size={17} /><div><strong>GitHub is not connected in demo mode.</strong><span>Add your GitHub App or token environment variables, then a future server-side adapter can create a draft PR after your explicit approval.</span></div></div> : null}
+              {githubNotice ? <div className="integration-notice"><GitPullRequestDraft size={17} /><div><strong>Draft PR creation is not enabled yet.</strong><span>The MVP reads GitHub source evidence with a server token. A future GitHub App adapter can create a draft PR after your explicit approval.</span></div></div> : null}
             </>
           ) : <div className="detail-empty"><CircleAlert size={22} /><h2>Select a fix candidate</h2><p>Evidence-backed fixes will appear here when an audit completes.</p></div>}
         </GlassPanel>

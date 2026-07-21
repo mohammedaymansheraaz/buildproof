@@ -4,7 +4,7 @@
 
 BuildProof is an evidence-backed release-assurance workspace for software teams. It connects product intent, repository context, browser behavior, cloud readiness, safe security posture, and release evidence into a decision: **ship, review, or hold**.
 
-The current build is a polished, fully interactive local demo plus a production-shaped public/auth foundation. It is deliberately not presented as a live penetration-testing service until its server-side authorization, persistence, and isolated runner controls exist.
+The current build is a polished, fully interactive local demo with implemented Supabase authentication and a base Supabase persistence migration. It is deliberately not presented as a live penetration-testing service until its server-side audit authorization, durable runner, and isolated execution controls exist.
 
 The first shippable scope is defined in `mvp.md`. The UI theme contract is defined in `design-theme.md`.
 
@@ -19,27 +19,34 @@ The first shippable scope is defined in `mvp.md`. The UI theme contract is defin
 
 ## Product experience model
 
-BuildProof presents one application audit through three user-facing expert teams. Individual low-level checks remain useful as evidence provenance and runner capabilities, but they are not the primary navigation model.
+BuildProof presents one application audit through five user-facing pillars. The named specialists remain available as evidence provenance and runner capabilities, but the user never has to choose between ten competing tools.
 
-1. **Application Experience & Quality** — journey QA, UI behavior, functional testing, accessibility, and frontend quality.
-2. **Engineering Performance & Infrastructure** — API, backend, data flow, cloud, performance, code architecture, and delivery readiness.
-3. **Security & Reliability Intelligence** — authorization, data protection, safe vulnerability signals, identity, and reliability review.
+1. **Product Intelligence** — Product Understanding Agent, repository/app discovery, target verification, architecture signals, and scope/limitation mapping.
+2. **Experience & Quality** — UI/UX testing, functional QA, critical user journeys, accessibility, and frontend behavior.
+3. **Engineering & Scale** — performance, backend/API, cloud/configuration, database, DevOps/deployment, and code-architecture readiness.
+4. **Security & Reliability** — security engineering, authentication/authorization, data protection, dependency/configuration posture, and safe vulnerability signals.
+5. **AI & Launch Readiness** — conditional AI Evaluation Agent, Finance/CTO readiness and cost/FinOps signals, evidence coverage, launch checklist, and CTO-level release synthesis.
 
-The desktop public experience follows a cinematic five-scene story:
+The CTO report is a deterministic evidence-and-policy layer inside AI & Launch Readiness, not a sixth scanner or a free-running agent. A model may summarize and prioritize verified evidence; it cannot create a finding without an artifact or override a release gate.
 
-1. Application intake and audit-boundary mapping.
-2. Experience & quality analysis.
-3. Engineering systems analysis.
-4. Security & reliability intelligence.
-5. A unified application health report with replayable evidence.
+The desktop public experience is one cinematic **Audit Assembly** story, controlled by one scroll timeline:
 
-The `CinematicAuditCore` is progressive enhancement: capable desktop browsers receive a draggable WebGL model and scroll-linked discipline transitions; reduced-motion, compact, and non-WebGL environments receive the same semantic content and a CSS model.
+1. Understand: repository and verified application target assemble into a product map.
+2. Experience: interactions, journeys, and accessibility signals become visible.
+3. Engineering: APIs, data, performance, and delivery systems open around the product.
+4. Protect: security and reliability boundaries reveal risk evidence.
+5. Decide: the five pillars form an evidence-coverage-aware release passport.
+
+The `CinematicAuditCore` is progressive enhancement: capable desktop browsers receive a draggable WebGL model and scroll-linked state transitions; reduced-motion, compact, and non-WebGL environments receive the same semantic content as static CSS panels. Do not add a second scroll story or another competing scroll controller.
 
 ## Credential handling
 
 - Put secrets only in the ignored `.env` file or a deployment secret manager.
-- Never paste a GitHub, OpenAI, Clerk, database, cloud, or runner credential into this file.
-- Prefer a per-organization GitHub App with least-privilege, short-lived installation tokens over a shared `GITHUB_TOKEN`.
+- Never paste a GitHub, OpenRouter, Nebius, OpenAI, Supabase, database, cloud, or runner credential into this file.
+- The prototype may use a fine-grained, read-only `GITHUB_TOKEN` on the server for an explicitly scoped repository audit. It must never reach the browser, source code, markdown, logs, screenshots, or client storage.
+- Public repositories do not require a token. For a private repository, use a user-authorized fine-grained token only for the requested audit and delete it after use unless a future encrypted connection flow is implemented.
+- Migrate repository access to a least-privilege GitHub App with short-lived installation tokens before production multi-tenant use.
+- Default AI routing to OpenRouter; Nebius and OpenAI are optional server-side fallbacks selected only by explicit configuration.
 - If a credential is ever pasted into a document or commit, revoke/rotate it immediately before continuing.
 
 ## Delivery checklist
@@ -55,12 +62,13 @@ The `CinematicAuditCore` is progressive enhancement: capable desktop browsers re
 
 - [x] Release Lens dashboard with release posture, active audits, risk trend, and recent findings.
 - [x] Fix the collapsed navigation rail so every icon remains visible, labelled, and keyboard-addressable.
-- [x] Turn the dashboard lens into an interactive WebGL release assembly with selectable Experience, Engineering, and Security evidence surfaces; retain a CSS/reduced-motion fallback.
+- [x] Turn the dashboard lens into an interactive WebGL release assembly with selectable evidence surfaces; retain a CSS/reduced-motion fallback.
 - [x] Make the dashboard decision and full-card next actions unambiguous, and verify the result in desktop and mobile Chromium.
-- [x] Reframe the visible audit product around the three expert teams: Experience & Quality, Engineering & Infrastructure, and Security & Reliability.
+- [x] Reframe dashboard, scope wizard, findings, live audit, and reports around the five MVP pillars without exposing ten separate tools.
 - [x] Add a desktop-first cinematic audit core with WebGL/CSS progressive enhancement, selectable expert disciplines, and scroll-linked story chapters.
-- [x] Replace flat dashboard surface bars with category-level health, specialist perspectives, recommendations, evidence counts, and real filtered evidence links.
-- [x] Update the scope wizard, live audit path, findings query filter, and report summary to use the same three-team mental model.
+- [x] Consolidate the landing into one five-stage Audit Assembly sequence; remove duplicate/competing scroll narratives and make the final CTA lead into registration.
+- [x] Replace flat dashboard surface bars with five-pillar health, specialist perspectives, recommendations, evidence counts, limitations, and real filtered evidence links.
+- [x] Update the scope wizard, live audit path, findings query filter, and report summary to use the same five-pillar mental model.
 - [x] Add a founder-facing MVP scope document and a shared Evidence Glass design theme.
 - [x] New Audit wizard for source, product intent, scope, and review/launch.
 - [x] Generated test charter with editable workflow checks.
@@ -71,38 +79,39 @@ The `CinematicAuditCore` is progressive enhancement: capable desktop browsers re
 ### 3. Public product surface and authentication
 
 - [x] Replace the root dashboard with a public BuildProof landing page.
-- [x] Build the landing page as an audit journey: Repo Intelligence → Browser QA → API & Cloud → Security Baseline → Evidence & Verdict.
+- [x] Build the landing page as an audit journey with a persistent Login/Register path.
 - [x] Add a GSAP ScrollTrigger + Lenis desktop sequence with a static, reduced-motion/mobile fallback.
 - [x] Add a persistent glass header, Register/Login calls-to-action, proof, safety model, and final CTA.
-- [x] Add Clerk provider wiring, `/sign-in`, `/sign-up`, and protected workspace route boundaries.
-- [x] Keep a clear local setup state when Clerk keys are absent instead of faking a login.
-- [ ] Replace the temporary Clerk boundary with Supabase Auth plus Supabase PostgreSQL. Use email/password first; add Google OAuth only when it is needed.
-- [ ] Create a user-owned Supabase project and add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to `.env`.
-- [ ] Enable Supabase email/password, configure the `/auth/callback` redirect, and implement styled sign-in, registration, password reset, and protected-route session refresh.
+- [x] Replace the temporary Clerk boundary with Supabase Auth plus the Supabase PostgreSQL foundation.
+- [x] Implement Supabase email/password and Google OAuth flows, `/auth/callback`, styled registration/sign-in, password reset, session refresh, and proxy-protected routes.
+- [x] Add local-only, visibly labelled demo credentials behind `AUDIT_MODE=demo` and `DEMO_AUTH_ENABLED=true`; exclude them completely from deployed environments.
+- [ ] Configure the production Supabase project, Google OAuth provider, redirect URLs, and deployed environment variables; validate a real provider round trip.
 - [ ] Add Supabase TOTP MFA later for an authenticator app. This is distinct from Google OAuth.
 
 ### 4. Production control plane — required before real audits
 
 - [ ] Make `AUDIT_MODE` authoritative server-side. Demo mode must reject all real job creation.
 - [ ] Require a signed-in user, organization membership, role authorization, project ownership, and a server-side scope record for every mutation.
-- [ ] Validate audit targets: verified host only; block localhost, private/link-local/metadata IPs, unsafe redirects, and DNS rebinding; default to preview/staging.
+- [ ] Make the first live audit require a GitHub repository plus a verified staging target. Verify a short-lived token at `/.well-known/buildproof-verification.txt` before queuing a run.
+- [ ] Validate audit targets: public HTTPS verified host only; block localhost, private/link-local/metadata IPs, unsafe redirects, DNS rebinding, and production hosts by default.
 - [ ] Require a separate owner-approved production policy with an expiry, test-account reference, module list, and rate budget.
 - [ ] Replace browser `localStorage` state with server-owned data and immutable event records.
 - [ ] Ensure reports cannot seal or export an in-progress audit as a release passport.
 
 ### 5. PostgreSQL and durable jobs
 
-- [ ] Add Supabase PostgreSQL migrations and a repository/service boundary. The browser will use only the publishable key; privileged access stays in server/runner environments.
-- [ ] Model `organizations`, `users`, `memberships`, `projects`, `audit_targets`, `audit_scopes`, `audit_runs`, `audit_jobs`, immutable `audit_events`, `findings`, `finding_evidence`, `artifacts`, `fix_proposals`, `verification_runs`, `release_decisions`, and integration metadata.
+- [x] Add the initial Supabase PostgreSQL foundation migration and Supabase client/service boundary. The browser uses only the publishable key; privileged access stays in server/runner environments.
+- [ ] Model `profiles`, `organizations`, `memberships`, `projects`, `repository_connections`, `audit_targets`, `target_verifications`, `audit_scopes`, `audit_runs`, `agent_jobs`, immutable `audit_events`, `findings`, `finding_evidence`, `artifacts`, `fix_proposals`, `verification_runs`, `release_reports`, and integration metadata.
 - [ ] Put `org_id` on every tenant-owned row, add tenant-scoped indexes and foreign keys, and enforce server-side state transitions.
 - [ ] Use idempotency keys plus a transactional outbox when an audit is created.
-- [ ] Add Redis/queue workers with pause, cancel, resume, job budgets, and delta audits.
-- [ ] Store screenshots, videos, and traces in object storage; PostgreSQL stores redacted metadata and object keys.
+- [ ] Use `pg-boss` on Supabase PostgreSQL for durable jobs, retries, pause/cancel/resume, budgets, and status events; do not add Redis in the lean MVP.
+- [ ] Store screenshots, traces, and report artifacts in private Supabase Storage; PostgreSQL stores redacted metadata and object keys.
 
 ### 6. Isolated audit runners
 
 - [ ] Separate the control plane from disposable, no-root runner containers.
-- [ ] Use adapters for repository intelligence, Playwright browser QA, API/cloud checks, safe security baseline, accessibility, performance, and evidence generation.
+- [ ] Use adapters for Product Intelligence, Playwright browser QA, axe accessibility, Lighthouse performance, repository/source/dependency analysis, safe security baseline, conditional AI evaluation, and evidence generation.
+- [ ] In the first live audit, treat cloud/database readiness as source/configuration evidence only; do not connect directly to cloud accounts or databases.
 - [ ] Never mount the Docker socket or give an LLM arbitrary shell/network access.
 - [ ] Redact cookies, headers, secrets, and personal data before logs, storage, exports, or model calls.
 - [ ] Publish structured JSON/SARIF reports, canonical finding fingerprints, and evidence replay links.
@@ -120,43 +129,49 @@ The `CinematicAuditCore` is progressive enhancement: capable desktop browsers re
 ```text
 Next.js public site + authenticated control plane
         |
-        +-- Supabase Auth (users, sessions, email/password, optional OAuth/MFA)
+        +-- Supabase Auth (email/password, Google OAuth, later MFA)
         |
-        +-- Supabase PostgreSQL (tenant data, immutable audit events, decisions, RLS)
-        +-- Redis / queue + transactional outbox
+        +-- Supabase PostgreSQL (tenant data, immutable events, decisions, RLS)
+        |     +-- pg-boss + transactional outbox (durable audit jobs)
+        |
+        +-- Supabase Storage (private redacted screenshots, traces, report artifacts)
         |
         +-- Isolated disposable runner
               |
-              +-- Repo intelligence
+              +-- GitHub repository intelligence (server-only prototype token)
               +-- Browser QA (Playwright)
-              +-- API and cloud/config adapters
+              +-- Accessibility and performance (axe, Lighthouse)
+              +-- Source/config, dependency, and delivery-readiness adapters
               +-- Authorized non-destructive security baseline
-              +-- Accessibility/performance adapters
               +-- Redaction + evidence/report generator
         |
-        +-- Object storage (screenshots, traces, report artifacts)
+        +-- AI interpretation adapter
+              +-- OpenRouter free router (primary)
+              +-- Nebius / OpenAI (optional configured fallback)
 ```
 
-## Required integrations when moving beyond demo mode
+## Runtime integration configuration
 
 | Integration | Why it is needed | Environment variable(s) |
 | --- | --- | --- |
-| Supabase | Email/password sessions, tenant PostgreSQL, later OAuth and TOTP MFA | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; server/runner only: `SUPABASE_SECRET_KEY` |
-| OpenAI | Intent parsing, test-plan generation, report synthesis, fix briefs | `OPENAI_API_KEY`, `OPENAI_MODEL` |
-| GitHub App | Private repository connection and optional draft pull requests | `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_WEBHOOK_SECRET` |
-| PostgreSQL | Persist projects, runs, findings, evidence metadata, and decisions | `DATABASE_URL`, later `DIRECT_URL` / migration URL |
-| Redis / queue | Durable background audits and retries | `REDIS_URL` |
-| Object storage | Screenshots, Playwright traces, reports | `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` |
+| Supabase | Implemented auth/persistence foundation; configure live email/password, Google OAuth, tenant PostgreSQL, RLS, and private Storage | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; server/runner only: `SUPABASE_SECRET_KEY` |
+| GitHub personal-token prototype | Read explicitly authorized repository metadata/content for an audit | server-only `GITHUB_TOKEN` (fine-grained, read-only, minimum repository access) |
+| OpenRouter | Primary low-cost AI routing for intent parsing, evidence grouping, report synthesis, and fix briefs | `AI_PROVIDER=openrouter`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` |
+| Nebius fallback | Optional explicitly selected AI fallback | `NEBIUS_API_KEY`, `NEBIUS_MODEL` |
+| OpenAI fallback | Optional explicitly selected AI fallback | `OPENAI_API_KEY`, `OPENAI_MODEL` |
+| PostgreSQL / pg-boss | Persist projects, runs, jobs, findings, evidence metadata, decisions, and durable jobs | Supabase database connection variables available server-side only |
+| Local demo | Clearly separated presentation auth/fixtures | `AUDIT_MODE=demo`, `DEMO_AUTH_ENABLED=true` only on a local machine |
 | Authorized runner | Isolated browser/security scan jobs | `AUDIT_RUNNER_URL`, `AUDIT_RUNNER_TOKEN` |
 
-No real key is bundled with this repository. Do not use public/free credentials found online: they are unsafe, unreliable, and inappropriate for customer data.
+No real key is bundled with this repository. Do not use public/free credentials found online: they are unsafe, unreliable, and inappropriate for customer data. Provider free models are selected by configuration, not assumed to be permanently available. Do not add GitHub App credentials yet; the production migration from the server-only personal-token prototype is an explicit later milestone.
 
 ## Build order from here
 
-1. Finish the presentation pass: tune cinematic pacing in real-device testing and add Playwright visual regression coverage for the desktop story.
-2. Configure Supabase Auth and add organization/role boundaries.
-3. Add Supabase PostgreSQL migrations, RLS, real `PillarSummary` / specialist-agent state, an authenticated repository layer, and a seeded sample workspace.
-4. Replace local demo mutations with authenticated server mutations.
-5. Add queue/outbox and isolated runner contracts that report structured per-agent progress and evidence.
-6. Add GitHub, OpenAI, evidence-storage, and runner integrations behind scope/policy checks.
-7. Add end-to-end tests, production observability, rate limiting, CSP/HSTS, retention, and launch review.
+1. Finish the presentation pass: tune the completed five-stage Audit Assembly in real-device testing, add the skip control, and add visual regression coverage.
+2. Configure the live Supabase project and Google provider, set deployment environment variables, and validate email/password, reset, and OAuth round trips.
+3. Extend the foundation migration with complete tenant RLS, private Storage, five-pillar state, an authenticated repository layer, and a seeded sample workspace.
+4. Replace local demo mutations with authenticated server mutations and durable `pg-boss` audit jobs.
+5. Add GitHub repository intake plus `/.well-known/buildproof-verification.txt` staging verification and enforce the safe first-live-audit scope.
+6. Add isolated runner contracts for the safe scanner set; stream structured per-pillar progress, evidence, limitations, and coverage.
+7. Add OpenRouter evidence interpretation with explicit Nebius/OpenAI fallback configuration; keep deterministic evidence and policy authoritative.
+8. Add end-to-end lifecycle tests, rate limiting, CSP/HSTS, retention, production approval, and migrate repository access to a GitHub App.

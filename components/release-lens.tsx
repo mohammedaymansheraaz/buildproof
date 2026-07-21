@@ -8,12 +8,12 @@ import { cn } from "@/lib/utils";
 type ReleaseLensProps = {
   score: number;
   verdict: ReleaseVerdict;
-  functional: number;
-  security: number;
-  cloud: number;
-  functionalLabel?: string;
-  securityLabel?: string;
-  cloudLabel?: string;
+  readings: Array<{
+    id: string;
+    label: string;
+    value: number | null;
+    assessed: boolean;
+  }>;
   coreLabel?: string;
   verdictLabel?: string;
 };
@@ -21,12 +21,7 @@ type ReleaseLensProps = {
 export function ReleaseLens({
   score,
   verdict,
-  functional,
-  security,
-  cloud,
-  functionalLabel = "Functional",
-  securityLabel = "Security",
-  cloudLabel = "Cloud",
+  readings,
   coreLabel = "Release confidence",
   verdictLabel,
 }: ReleaseLensProps) {
@@ -47,7 +42,7 @@ export function ReleaseLens({
       className="release-lens-wrap"
       onPointerMove={handlePointerMove}
       onPointerLeave={() => setRotation({ x: 0, y: 0 })}
-      aria-label={`${verdict}, release confidence ${score}`}
+      aria-label={`${verdict}, release confidence ${score}; ${readings.length} expert team readings`}
     >
       <motion.div
         className={cn("release-lens", `release-lens--${verdictClass}`)}
@@ -56,18 +51,12 @@ export function ReleaseLens({
       >
         <span className="lens-glint lens-glint--one" />
         <span className="lens-glint lens-glint--two" />
-        <div className="lens-plate lens-plate--functional">
-          <span>{functionalLabel}</span>
-          <strong>{functional}%</strong>
-        </div>
-        <div className="lens-plate lens-plate--security">
-          <span>{securityLabel}</span>
-          <strong>{security}%</strong>
-        </div>
-        <div className="lens-plate lens-plate--cloud">
-          <span>{cloudLabel}</span>
-          <strong>{cloud}%</strong>
-        </div>
+        {readings.map((reading) => (
+          <div className={cn("lens-plate", `lens-plate--${reading.id}`)} key={reading.id}>
+            <span>{reading.label}</span>
+            <strong>{reading.assessed ? `${reading.value ?? 0}%` : "—"}</strong>
+          </div>
+        ))}
         <div className="lens-core">
           <span className="lens-core__eyebrow">{coreLabel}</span>
           <strong>{score}</strong>

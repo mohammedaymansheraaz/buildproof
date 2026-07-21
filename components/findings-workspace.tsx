@@ -23,7 +23,7 @@ import {
 import { useAudit } from "@/components/audit-provider";
 import { CategoryIcon, EmptyState, FindingStatusBadge, GlassPanel, SeverityBadge, SeverityMark } from "@/components/ui";
 import { getAuditProgress, severityLabel } from "@/lib/audit-engine";
-import { auditDomainIds, getAuditDomain, getDomainForFinding, type AuditDomainId } from "@/lib/audit-domains";
+import { auditDomainIds, auditDomains, getAuditDomain, getDomainForFinding, type AuditDomainId } from "@/lib/audit-domains";
 import { cn } from "@/lib/utils";
 import type { AuditCategory, Evidence, Finding, Severity } from "@/lib/types";
 
@@ -85,11 +85,18 @@ export function FindingsWorkspace() {
             <div><span className="panel-kicker">Triage queue</span><h2>Release signals</h2></div>
             <span>{filtered.length}</span>
           </div>
+          <div className="finding-domain-filter" aria-label="Filter findings by expert team">
+            <span>Expert team</span>
+            <div>
+              {auditDomains.map((team) => <Link href={`/findings?domain=${team.id}`} key={team.id} className={cn(domain === team.id && "finding-domain-filter__link--active")}>{team.shortLabel}</Link>)}
+            </div>
+          </div>
           {domain ? <div className="domain-filter-context"><span>Expert team · {domainLabel}</span><Link href="/findings">Clear filter</Link></div> : null}
           <div className="finding-filters">
             <div className="filter-row"><Filter size={14} />{(["all", "critical", "high", "medium", "low"] as const).map((item) => <button type="button" className={cn(severity === item && "filter-chip--active")} onClick={() => setSeverity(item)} key={item}>{item === "all" ? "All" : severityLabel(item)}</button>)}</div>
             <select value={category} onChange={(event) => setCategory(event.target.value as "all" | AuditCategory)} aria-label="Filter findings by category">
               <option value="all">All surfaces</option>
+              <option value="product">Product intelligence</option>
               <option value="functional">Functional</option>
               <option value="security">Security</option>
               <option value="api">API & config</option>
@@ -97,6 +104,10 @@ export function FindingsWorkspace() {
               <option value="accessibility">Accessibility</option>
               <option value="performance">Performance</option>
               <option value="code">Code</option>
+              <option value="database">Database</option>
+              <option value="devops">DevOps</option>
+              <option value="ai">AI evaluation</option>
+              <option value="launch">Launch readiness</option>
             </select>
           </div>
           <div className="findings-list-panel__list">
