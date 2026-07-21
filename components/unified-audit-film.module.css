@@ -385,11 +385,17 @@
  */
 @media (min-width: 900px) {
   .chapter { scroll-margin-top: 88px; }
-  .chapter01 { min-height: 218svh; }
-  .chapter02 { min-height: 218svh; }
-  .chapter03 { min-height: 264svh; }
-  .chapter04 { min-height: 224svh; }
-  .chapter05 { min-height: 224svh; }
+  /*
+   * Scroll runway, not empty space: each chapter remains pinned in its
+   * full-viewport stage for this entire distance. The ranges give a normal
+   * wheel or trackpad gesture enough room to reveal one story beat at a time;
+   * the final verdict deliberately has the longest hold.
+   */
+  .chapter01 { min-height: 290svh; }
+  .chapter02 { min-height: 290svh; }
+  .chapter03 { min-height: 360svh; }
+  .chapter04 { min-height: 300svh; }
+  .chapter05 { min-height: 350svh; }
 
   .fullFilmStage[data-scene="product-intelligence"][data-beat="0"] .fullSceneCopy,
   .fullFilmStage[data-scene="security-reliability"][data-beat="0"] .fullSceneCopy { opacity: 0; transform: translateY(20px); animation: none !important; }
