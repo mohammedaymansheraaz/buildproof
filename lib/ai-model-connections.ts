@@ -51,7 +51,7 @@ export type SavedAiModelConnection = {
 };
 
 export type AiModelStorageStatus = {
-  mode: "encrypted-supabase" | "schema-missing" | "unconfigured";
+  mode: "encrypted-supabase" | "direct-supabase" | "schema-missing" | "unconfigured";
   canPersist: boolean;
   encryptionReady: boolean;
   message: string;
@@ -87,6 +87,10 @@ function encryptionKey() {
 }
 
 export function encryptApiKey(apiKey: string) {
+  if (!isAiCredentialEncryptionConfigured()) {
+    return `plain:v1:${Buffer.from(apiKey, "utf8").toString("base64url")}`;
+  }
+
   const iv = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", encryptionKey(), iv);
   const ciphertext = Buffer.concat([cipher.update(apiKey, "utf8"), cipher.final()]);
@@ -100,6 +104,10 @@ export function encryptApiKey(apiKey: string) {
 }
 
 export function decryptApiKey(value: string) {
+  if (value.startsWith("plain:v1:")) {
+    return Buffer.from(value.replace("plain:v1:", ""), "base64url").toString("utf8");
+  }
+
   const [version, ivRaw, tagRaw, ciphertextRaw] = value.split(":");
   if (version !== "v1" || !ivRaw || !tagRaw || !ciphertextRaw) {
     throw new Error("Saved AI credential has an unsupported encryption format.");
@@ -158,10 +166,10 @@ export function getAiModelStorageStatus(schemaReady = true): AiModelStorageStatu
 
   if (!isAiCredentialEncryptionConfigured()) {
     return {
-      mode: "encrypted-supabase",
-      canPersist: false,
+      mode: "direct-supabase",
+      canPersist: true,
       encryptionReady: false,
-      message: "Add CREDENTIAL_ENCRYPTION_KEY to save keys. Testing still works, but persistent BYOK storage is locked.",
+      message: "Keys are saved server-side in Supabase and only returned to the browser as masked hints. Add CREDENTIAL_ENCRYPTION_KEY later to encrypt them at rest.",
     };
   }
 
@@ -221,9 +229,6 @@ async function clearDefault(admin: SupabaseClient, userId: string) {
 export async function saveAiModelConnection(userId: string, input: SaveAiModelConnectionInput) {
   const admin = adminClient();
   if (!admin) throw new Error("Supabase admin credentials are required before saving AI model keys.");
-  if (!isAiCredentialEncryptionConfigured()) {
-    throw new Error("CREDENTIAL_ENCRYPTION_KEY is missing or too short. Add a random 32+ character server-only secret before saving API keys.");
-  }
   if (!input.apiKey.trim()) throw new Error("Paste the provider API key before saving this model.");
   if (input.testResult.usedDeploymentKey) throw new Error("Deployment keys are already available server-side; paste a BYOK key if you want to save a personal default.");
 

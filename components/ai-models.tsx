@@ -38,7 +38,7 @@ type DeploymentStatus = {
 };
 
 type StorageStatus = {
-  mode: "encrypted-supabase" | "schema-missing" | "unconfigured";
+  mode: "encrypted-supabase" | "direct-supabase" | "schema-missing" | "unconfigured";
   canPersist: boolean;
   encryptionReady: boolean;
   message: string;
@@ -312,7 +312,7 @@ export function AiModels() {
             <div><span className="panel-kicker">Active model</span><h2>{activeModel ? activeModel.model : "No saved BYOK model yet"}</h2></div>
             <Bot size={20} />
           </div>
-          <p>{activeModel ? `${activeModel.providerLabel} · score ${activeModel.score ?? "—"}/10 · ${activeModel.rating ?? "tested"}` : "Test and save a model once. BuildProof encrypts the API key in Supabase and uses it automatically for AI briefs and CTO reports."}</p>
+          <p>{activeModel ? `${activeModel.providerLabel} · score ${activeModel.score ?? "—"}/10 · ${activeModel.rating ?? "tested"}` : "Test and save a model once. BuildProof stores the key server-side in Supabase and uses it automatically for AI briefs and CTO reports."}</p>
           <div className="model-active-card__facts">
             <span><KeyRound size={13} />{activeModel?.maskedKey ?? "key not stored"}</span>
             <span><ShieldCheck size={13} />raw keys never display</span>
@@ -334,7 +334,7 @@ export function AiModels() {
           <div>
             <span className="panel-kicker">Key handling</span>
             <strong>{payload?.storage.message ?? "Loading secure key storage status..."}</strong>
-            <p>{payload?.storage.canPersist ? "Keys are encrypted with the server credential secret before Supabase persistence." : "You can still test a key, but persistent judge-ready storage needs the missing setup item above."}</p>
+            <p>{payload?.storage.mode === "encrypted-supabase" ? "Keys are encrypted with the server credential secret before Supabase persistence." : payload?.storage.canPersist ? "For the submission build, saving works without an extra encryption secret; raw keys are never returned to the browser." : "You can still test a key, but persistent judge-ready storage needs the missing setup item above."}</p>
           </div>
         </GlassPanel>
       </div>
@@ -423,7 +423,7 @@ export function AiModels() {
             </button>
             <button type="button" className="button button--quiet" onClick={saveModel} disabled={!canSave}>
               {saving ? <LoaderCircle size={16} className="repository-inspection__spinner" /> : <Sparkles size={16} />}
-              {saving ? "Saving encrypted key..." : "Save as default brain"}
+              {saving ? "Saving model key..." : "Save as default brain"}
             </button>
           </div>
 
@@ -465,7 +465,7 @@ export function AiModels() {
 
           {payload?.connections.length ? (
             <div className="model-saved-list">
-              <span className="panel-kicker">Saved encrypted models</span>
+              <span className="panel-kicker">Saved BYOK models</span>
               {payload.connections.map((connection) => (
                 <div className="model-saved-row" key={connection.id}>
                   <div>

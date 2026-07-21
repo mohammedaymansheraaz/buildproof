@@ -64,7 +64,7 @@ Required environment variables:
 | `NEXT_PUBLIC_SUPABASE_URL` | Browser-safe Supabase project URL. | Supabase Dashboard → Project Settings → API → Project URL. |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser-safe Supabase publishable/anon key. | Supabase Dashboard → Project Settings → API → publishable/anon key. |
 | `SUPABASE_SECRET_KEY` | Server-only Supabase service role key for persistence. | Supabase Dashboard → Project Settings → API → service role/secret key. |
-| `CREDENTIAL_ENCRYPTION_KEY` | Server-only encryption secret for saved AI model keys. | Generate locally with `openssl rand -base64 32`. |
+| `CREDENTIAL_ENCRYPTION_KEY` | Optional hardening secret to encrypt saved AI model keys at rest. The submission build can save BYOK keys without it. | Optional: generate locally with `openssl rand -base64 32`. |
 | `GITHUB_TOKEN` | Server-only read access for repository inspection. | GitHub → Settings → Developer settings → fine-grained personal access token with read-only repository access. |
 | `AI_PROVIDER` | Selects the deployment AI provider. | Set `openai` for GPT-5.6 synthesis. |
 | `OPENAI_API_KEY` | Server-only key for CTO-level AI synthesis. | OpenAI Platform → API keys. |
