@@ -179,11 +179,12 @@ export function UnifiedAuditFilm() {
       return;
     }
 
-    const usableDistance = Math.max(0, section.offsetHeight - window.innerHeight);
-    // `story` is positioned for its visual spine, so offsetTop is relative to
-    // that parent—not the document. Use the viewport rect for true navigation.
+    const scrollLength = Math.max(1, section.offsetHeight - window.innerHeight * 0.58);
+    // Match the observer's progress equation exactly. `story` is positioned
+    // for its visual spine, so offsetTop is also relative to that parent.
     const documentTop = section.getBoundingClientRect().top + window.scrollY;
-    const target = documentTop + usableDistance * (beat / Math.max(1, chapter.beats.length)) + 4;
+    const progress = (beat + 0.12) / chapter.beats.length;
+    const target = documentTop - window.innerHeight * 0.18 + scrollLength * progress;
     window.scrollTo({ top: target, behavior: "smooth" });
   };
 
@@ -382,45 +383,210 @@ function FilmChapter({ chapter, activeBeatIndex, motionEnabled, registerRef, onB
     >
       {motionEnabled ? (
         <div className={styles.chapterSticky}>
-          <div className={styles.chapterTopline}>
-            <span>Chapter {chapter.number}</span><i /><b>{chapter.title}</b><small>{chapter.agentIds.map((id) => `agent ${id}`).join(" · ")}</small>
-          </div>
-          <div className={styles.chapterGrid}>
-            <div className={styles.narrativeColumn}>
-              <div className={styles.chapterSeal}><Icon size={17} strokeWidth={1.45} /><span>Specialist sequence</span></div>
-              <div className={styles.beatNarrative} key={activeBeat.id}>
-                <p className={styles.eyebrow}><i /> {activeBeat.eyebrow}</p>
-                <h2 id={`${chapter.id}-title`}>{activeBeat.title}</h2>
-                <p>{activeBeat.body}</p>
-                {activeBeat.transition ? <div className={styles.handoff}><span>{activeBeat.transition}</span><ArrowRight size={14} /></div> : null}
-              </div>
-              <BeatControls chapter={chapter} activeBeatIndex={activeBeatIndex} onBeatSelect={onBeatSelect} />
-            </div>
-
-            <CinematicVisual chapter={chapter} beat={activeBeat} beatIndex={activeBeatIndex} />
-
-            <aside className={styles.evidencePanel}>
-              <div className={styles.evidencePanelHead}>
-                <span><TerminalSquare size={13} /> Evidence thread</span>
-                <b>{String(activeBeatIndex + 1).padStart(2, "0")} / {String(chapter.beats.length).padStart(2, "0")}</b>
-              </div>
-              <p className={styles.evidenceMetric}>{activeBeat.metric}</p>
-              <ul>
-                {activeBeat.evidence.map((item) => <li key={item}><Check size={12} />{item}</li>)}
-              </ul>
-              <div className={styles.activeAgentCard}>
-                <span>{activeBeat.agentIds.map((id) => `Agent ${id}`).join(" + ")}</span>
-                <b>{agentNames(activeBeat.agentIds)}</b>
-                <small>{chapter.id === "engineering-infrastructure" && activeBeat.agentIds.includes("08") ? "Prepared here; formally verified after Security Agent 07." : "This reading remains linked to the same authorized scope."}</small>
-              </div>
-            </aside>
-          </div>
+          <FullBleedChapter
+            chapter={chapter}
+            activeBeat={activeBeat}
+            activeBeatIndex={activeBeatIndex}
+            icon={Icon}
+            onBeatSelect={onBeatSelect}
+          />
         </div>
       ) : (
         <StaticChapter chapter={chapter} icon={Icon} />
       )}
     </section>
   );
+}
+
+function FullBleedChapter({
+  chapter,
+  activeBeat,
+  activeBeatIndex,
+  icon: Icon,
+  onBeatSelect,
+}: {
+  chapter: CinematicChapter;
+  activeBeat: CinematicBeat;
+  activeBeatIndex: number;
+  icon: LucideIcon;
+  onBeatSelect: (beatIndex: number) => void;
+}) {
+  return (
+    <div
+      className={styles.fullFilmStage}
+      data-scene={chapter.id}
+      data-beat={activeBeatIndex}
+    >
+      <div className={styles.fullSceneTopline}>
+        <span>Chapter {chapter.number}</span>
+        <i />
+        <b>{chapter.title}</b>
+        <small>{chapter.agentIds.map((id) => `agent ${id}`).join(" · ")}</small>
+      </div>
+
+      <div className={styles.fullSceneMarker}><Icon size={15} strokeWidth={1.45} /><span>live audit film</span></div>
+      <FullBleedVisual chapter={chapter} beatIndex={activeBeatIndex} />
+
+      <div className={styles.fullSceneCopy} key={activeBeat.id}>
+        <p className={styles.eyebrow}><i /> {activeBeat.eyebrow}</p>
+        <h2 id={`${chapter.id}-title`}>{activeBeat.title}</h2>
+        <p>{stageCaption(activeBeat)}</p>
+      </div>
+
+      <div className={styles.fullSceneFooter}>
+        <span>{activeBeat.metric}</span>
+        <div className={styles.fullSceneAgent}><b>{activeBeat.agentIds.map((id) => `Agent ${id}`).join(" + ")}</b><i>{chapter.id === "engineering-infrastructure" && activeBeat.agentIds.includes("08") ? "operation prepared — not cleared" : agentNames(activeBeat.agentIds)}</i></div>
+        <BeatControls chapter={chapter} activeBeatIndex={activeBeatIndex} onBeatSelect={onBeatSelect} />
+      </div>
+    </div>
+  );
+}
+
+function FullBleedVisual({ chapter, beatIndex }: { chapter: CinematicChapter; beatIndex: number }) {
+  if (chapter.id === "product-intelligence") return <FullProductScene beatIndex={beatIndex} />;
+  if (chapter.id === "experience-quality") return <FullExperienceScene beatIndex={beatIndex} />;
+  if (chapter.id === "engineering-infrastructure") return <FullEngineeringScene beatIndex={beatIndex} />;
+  if (chapter.id === "security-reliability") return <FullSecurityScene beatIndex={beatIndex} />;
+  return <FullLaunchScene beatIndex={beatIndex} />;
+}
+
+function FullProductScene({ beatIndex }: { beatIndex: number }) {
+  return (
+    <div className={`${styles.fullVisual} ${styles.fullProductScene}`} data-beat={beatIndex} aria-label="Product intelligence visual story">
+      <div className={styles.scopeEntering}><i /><span>scope entering</span></div>
+      <svg className={styles.fullProductLinks} viewBox="0 0 1600 820" aria-hidden="true">
+        <path d="M244 375C454 148 650 374 794 398S1041 252 1324 216M244 375C497 529 629 650 827 558S1134 583 1324 606M580 657C768 556 815 518 947 361S1137 249 1324 216" />
+      </svg>
+      <article className={`${styles.fullProductNode} ${styles.fullSigninNode}`}><span>01</span><b>Sign in</b><small>role boundary</small></article>
+      <article className={`${styles.fullProductNode} ${styles.fullWorkspaceNode}`}><span>02</span><b>Workspace</b><small>core surface</small></article>
+      <article className={`${styles.fullProductNode} ${styles.fullInviteNode}`}><span>03</span><b>Invite</b><small>critical flow</small></article>
+      <article className={`${styles.fullProductNode} ${styles.fullApiNode}`}><span>04</span><b>API</b><small>service edge</small></article>
+      <article className={`${styles.fullProductNode} ${styles.fullDataNode}`}><span>05</span><b>Data</b><small>trust boundary</small></article>
+      <div className={styles.productChecklist}>
+        <span><Check size={12} /> repository boundary declared</span>
+        <span><Check size={12} /> privileged route separated</span>
+        <span><Check size={12} /> integration surface recorded</span>
+      </div>
+      <div className={styles.productSurfaceCount}><b>{beatIndex >= 2 ? <CountUpMetric value={184} activeKey={beatIndex} /> : "—"}</b><span>mapped surfaces</span></div>
+      <div className={styles.productBriefObject}><span>Audit brief</span><b>roles + journeys + dependencies</b><i>handoff ready</i></div>
+      <div className={styles.productBriefTrail}><i /><i /><i /></div>
+    </div>
+  );
+}
+
+function FullExperienceScene({ beatIndex }: { beatIndex: number }) {
+  return (
+    <div className={`${styles.fullVisual} ${styles.fullExperienceScene}`} data-beat={beatIndex} aria-label="Experience and functional quality visual story">
+      <div className={styles.experienceCarryBrief}><span>01</span><b>audit brief received</b></div>
+      <div className={styles.experienceLanes}>
+        <section className={`${styles.experienceLane} ${styles.experienceLaneLeft}`}>
+          <header><span>02 / UI UX</span><b>What a person sees</b></header>
+          <div className={styles.fullInviteForm}>
+            <small>Invite a teammate</small>
+            <label><span>Email</span><b>maria@acme.com</b></label>
+            <label><span>Role</span><b>Member</b></label>
+            <button type="button">Send invitation</button>
+            <i className={styles.focusRing} />
+            <em>focus state observed</em>
+          </div>
+        </section>
+        <section className={`${styles.experienceLane} ${styles.experienceLaneRight}`}>
+          <header><span>03 / FUNCTIONAL QA</span><b>What the system completes</b></header>
+          <div className={styles.fullJourneyTrack}>
+            <div><b>01</b><span>sign in</span></div><i />
+            <div><b>02</b><span>invite</span></div><i />
+            <div><b>03</b><span>accept</span></div><i />
+            <div><b>04</b><span>workspace</span></div>
+          </div>
+          <p>action → request → resulting state</p>
+        </section>
+      </div>
+      <div className={styles.experienceTrails}><i /><i /></div>
+      <div className={styles.experienceEvidenceMerge}><span>Evidence thread</span><b>screen + step + request + outcome</b><i>EXP-014 / reproducible</i></div>
+    </div>
+  );
+}
+
+function FullEngineeringScene({ beatIndex }: { beatIndex: number }) {
+  return (
+    <div className={`${styles.fullVisual} ${styles.fullEngineeringScene}`} data-beat={beatIndex} aria-label="Engineering performance and infrastructure visual story">
+      <svg className={styles.fullTraceSvg} viewBox="0 0 1600 720" aria-hidden="true">
+        <path className={styles.traceBareLine} d="M84 360H906" />
+        <path className={styles.tracePrimary} d="M84 360H226L282 319L338 399L394 343L488 365H676L738 327L802 390L876 350L906 360" />
+        <path className={styles.traceExtension} d="M906 360H1030L1102 326L1171 391L1252 351L1370 363H1508" />
+      </svg>
+      <div className={styles.traceMetricPanel}><span>runtime trace</span><b>p75 2.8s</b><div><i>LCP</i><i>INP</i><i>CLS</i></div></div>
+      <div className={`${styles.fullTraceNode} ${styles.traceApi}`}><Braces size={16} /><b>API</b><span>request</span></div>
+      <div className={`${styles.fullTraceNode} ${styles.traceWorker}`}><Cloud size={16} /><b>Worker</b><span>queue</span></div>
+      <div className={`${styles.fullTraceNode} ${styles.traceDependency}`}><Network size={16} /><b>Dependency</b><span>timeout</span></div>
+      <div className={`${styles.fullTraceNode} ${styles.traceDatabase}`}><Database size={17} /><b>Database</b><span>persist</span></div>
+      <div className={styles.databaseSubView}><span>06 / data path review</span><div><b>write</b><i>→</i><b>query</b><i>→</i><b>retention</b><i>→</i><b>recovery</b></div><small>constraints + capacity + migration safety</small></div>
+      <div className={styles.engineeringCollapsedTrace}><Activity size={14} /><span>request trace retained</span></div>
+      <div className={styles.pendingReleaseChecklist}><span>08 / release operation</span><div><b>build</b><i>→</i><b>migrate</b><i>→</i><b>smoke</b><i>→</i><b>observe</b><i>→</i><b>rollback</b></div><small>awaiting security gate</small></div>
+    </div>
+  );
+}
+
+function FullSecurityScene({ beatIndex }: { beatIndex: number }) {
+  return (
+    <div className={`${styles.fullVisual} ${styles.fullSecurityScene}`} data-beat={beatIndex} aria-label="Security and reliability visual story">
+      <div className={styles.securityCarriedChecklist}><span>08 / release operation</span><b>build → migrate → smoke → observe → rollback</b><i>security gate pending</i></div>
+      <div className={styles.fullAccessTable}>
+        <header><span>Role</span><span>Action</span><span>Observed result</span><span>Evidence</span></header>
+        <article className={`${styles.fullSecurityRow} ${styles.securityMember}`}><b>Member</b><span>Invite</span><i className={styles.passState}>observed</i><em>role boundary</em><div><small>severity low</small><small>confidence high</small></div></article>
+        <article className={`${styles.fullSecurityRow} ${styles.securityViewer}`}><b>Viewer</b><span>Export</span><i className={styles.reviewState}>review</i><em>data boundary</em><div><small>severity medium</small><small>confidence high</small></div></article>
+        <article className={`${styles.fullSecurityRow} ${styles.securityOperator}`}><b>Operator</b><span>Deploy</span><i className={styles.gatedState}>gated</i><em>release boundary</em><div><small>severity high</small><small>confidence medium</small></div></article>
+      </div>
+      <div className={styles.securityIdentityTrace}><i /><span>identity</span><b>→</b><span>action</span><b>→</b><span>data</span></div>
+      <div className={styles.securityResolvedChecklist}><span>08 / delivery verification</span><div><b>CI</b><i>→</i><b>environment</b><i>→</i><b>deploy</b><i>→</i><b>observe</b><i>→</i><b>rollback</b></div><small>cleared by security gate</small></div>
+    </div>
+  );
+}
+
+function FullLaunchScene({ beatIndex }: { beatIndex: number }) {
+  return (
+    <div className={`${styles.fullVisual} ${styles.fullLaunchScene}`} data-beat={beatIndex} aria-label="AI and launch readiness visual story">
+      <div className={styles.launchArtifactCloud}>
+        <article className={`${styles.launchArtifact} ${styles.artifactMap}`}><GitBranch size={16} /><span>product map</span></article>
+        <article className={`${styles.launchArtifact} ${styles.artifactEvidence}`}><TerminalSquare size={16} /><span>evidence thread</span></article>
+        <article className={`${styles.launchArtifact} ${styles.artifactTrace}`}><Activity size={16} /><span>runtime trace</span></article>
+        <article className={`${styles.launchArtifact} ${styles.artifactAccess}`}><ShieldCheck size={16} /><span>access table</span></article>
+      </div>
+      <div className={styles.aiDecisionNode}><span>09 / AI evaluation</span><b>Declared AI feature?</b><i>checking surface</i><div><small>feature declared</small><strong>evaluate</strong></div><div><small>no feature detected</small><strong>step aside</strong></div></div>
+      <div className={styles.reportAssemblyRing}><span>{beatIndex >= 2 ? <CountUpMetric value={82} activeKey={beatIndex} /> : "00"}</span><i>application health</i></div>
+      <article className={styles.fullPassport}>
+        <header><span>10 / final CTO-level report</span><b>{beatIndex === 3 ? "conditional" : "assembling"}</b></header>
+        <div><strong>{beatIndex === 3 ? "82" : "—"}</strong><span>release readiness</span></div>
+        <section><i>{beatIndex === 3 ? "3 holds / 5 owners" : "evidence converging"}</i><h3>{beatIndex === 3 ? "Conditional release" : "The report is forming"}</h3><p>{beatIndex === 3 ? "Resolve, re-check, then decide." : "Every specialist artifact remains attached."}</p></section>
+        <footer><span>re-audit path defined</span><span>evidence retained</span></footer>
+      </article>
+      <div className={styles.verdictLock}><i className={styles.verdictPass}>release</i><i className={styles.verdictCaution}>conditional</i><i className={styles.verdictHold}>hold</i></div>
+    </div>
+  );
+}
+
+function CountUpMetric({ value, activeKey }: { value: number; activeKey: number }) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const startedAt = performance.now();
+    let frame = 0;
+    const update = (now: number) => {
+      const progress = Math.min(1, (now - startedAt) / 920);
+      setCount(Math.round((1 - Math.pow(1 - progress, 3)) * value));
+      if (progress < 1) frame = window.requestAnimationFrame(update);
+    };
+    setCount(0);
+    frame = window.requestAnimationFrame(update);
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeKey, value]);
+
+  return <>{count}</>;
+}
+
+function stageCaption(beat: CinematicBeat) {
+  if (beat.transition) return beat.transition;
+  return beat.body.split(". ")[0].replace(/\.$/, ".");
 }
 
 function BeatControls({ chapter, activeBeatIndex, onBeatSelect }: Pick<FilmChapterProps, "chapter" | "activeBeatIndex" | "onBeatSelect">) {
@@ -573,7 +739,11 @@ function AgentRail({ activeAgentId, preparedDevOps, onAgentClick }: { activeAgen
 function executionAgentFor(chapterId: FilmChapterId, agentIds: readonly AgentId[]): AgentId {
   const candidate = agentIds[agentIds.length - 1] ?? "01";
   // DevOps prepares the operation in Engineering; its numbered execution remains after the security gate.
-  return chapterId === "engineering-infrastructure" && candidate === "08" ? "06" : candidate;
+  if (chapterId === "engineering-infrastructure" && candidate === "08") return "06";
+  // The convergence prelude carries both artifacts, but the optional AI check
+  // still occurs before the CTO report is allowed to take the active slot.
+  if (chapterId === "ai-launch-readiness" && agentIds.includes("09")) return "09";
+  return candidate;
 }
 
 function agentNames(ids: readonly AgentId[]) {
@@ -583,6 +753,11 @@ function agentNames(ids: readonly AgentId[]) {
 }
 
 function findAgentDestination(agentId: AgentId) {
+  // Agent 08 is deliberately introduced as an Engineering capability, but its
+  // numbered execution belongs after Security Agent 07 in the delivery gate.
+  if (agentId === "08") return { chapterId: "security-reliability" as FilmChapterId, beatIndex: 3 };
+  if (agentId === "09") return { chapterId: "ai-launch-readiness" as FilmChapterId, beatIndex: 1 };
+  if (agentId === "10") return { chapterId: "ai-launch-readiness" as FilmChapterId, beatIndex: 2 };
   for (const chapter of cinematicChapters) {
     const beatIndex = chapter.beats.findIndex((beat) => beat.agentIds.includes(agentId));
     if (beatIndex >= 0) return { chapterId: chapter.id, beatIndex };

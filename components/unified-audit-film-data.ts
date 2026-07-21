@@ -130,6 +130,17 @@ export const cinematicChapters: readonly CinematicChapter[] = [
     agentIds: ["01"],
     beats: [
       {
+        id: "scope-entering",
+        agentIds: ["01"],
+        eyebrow: "01 · Product Understanding Agent",
+        title: "The scope enters before a test begins.",
+        body:
+          "The audit receives its approved target and waits for the product boundary to be made explicit. Nothing is judged before the team knows what it is allowed to observe.",
+        metric: "Scope entering · awaiting an explicit boundary",
+        evidence: ["Approved target received"],
+        transition: "Scope is present. The boundary is about to be traced.",
+      },
+      {
         id: "scope-manifest",
         agentIds: ["01"],
         eyebrow: "01 · Product Understanding Agent",
@@ -185,6 +196,17 @@ export const cinematicChapters: readonly CinematicChapter[] = [
     agentIds: ["02", "03"],
     beats: [
       {
+        id: "journey-split",
+        agentIds: ["02", "03"],
+        eyebrow: "02–03 · Shared journey",
+        title: "One journey opens into two readings.",
+        body:
+          "The same customer task is held side by side: one lane follows what a person sees and understands; the other follows what the system is required to complete.",
+        metric: "Shared journey · interface × behaviour",
+        evidence: ["One scoped journey shared by both specialists"],
+        transition: "The shared brief splits into an interface lane and a behaviour lane.",
+      },
+      {
         id: "interface-reading",
         agentIds: ["02"],
         eyebrow: "02 · UI/UX Testing Agent",
@@ -239,6 +261,17 @@ export const cinematicChapters: readonly CinematicChapter[] = [
       "Runtime, service, data, and release-readiness evidence form one engineering story. DevOps belongs to this discipline, while its formal delivery verification runs after the security gate.",
     agentIds: ["04", "05", "06", "08"],
     beats: [
+      {
+        id: "signal-baseline",
+        agentIds: ["04"],
+        eyebrow: "04 · Performance Engineer Agent",
+        title: "A request begins as one quiet signal.",
+        body:
+          "Before a number appears, the performance agent establishes one continuous path through the runtime. The trace will grow; it will not reset into unrelated diagrams.",
+        metric: "Runtime baseline · signal acquired",
+        evidence: ["One customer request selected for the trace"],
+        transition: "The baseline is live. Now the runtime can be measured.",
+      },
       {
         id: "runtime-trace",
         agentIds: ["04"],
@@ -310,6 +343,17 @@ export const cinematicChapters: readonly CinematicChapter[] = [
     agentIds: ["07", "08"],
     beats: [
       {
+        id: "delivery-gate-carried",
+        agentIds: ["07"],
+        eyebrow: "07 · Security Engineer Agent",
+        title: "The release operation waits at the security gate.",
+        body:
+          "The delivery plan from Engineering remains deliberately unresolved while Security checks the access and data boundaries that determine whether it can safely proceed.",
+        metric: "Security gate · delivery operation pending",
+        evidence: ["Release operation carried forward without being cleared"],
+        transition: "The pending operation stays visible while the access boundary is tested.",
+      },
+      {
         id: "security-surface",
         agentIds: ["07"],
         eyebrow: "07 · Security Engineer Agent",
@@ -364,6 +408,17 @@ export const cinematicChapters: readonly CinematicChapter[] = [
       "AI evaluation activates only when the application uses AI. The CTO-level report then joins every specialist’s evidence into a clear release recommendation.",
     agentIds: ["09", "10"],
     beats: [
+      {
+        id: "evidence-drift",
+        agentIds: ["09", "10"],
+        eyebrow: "09–10 · Evidence convergence",
+        title: "Every earlier artifact stays attached to the decision.",
+        body:
+          "The product map, journey evidence, runtime trace, and access table return as separate artifacts before they assemble into one accountable release record.",
+        metric: "Evidence convergence · four specialist artifacts",
+        evidence: ["Product, experience, engineering, and security artifacts retained"],
+        transition: "The artifacts drift inward; AI applicability is checked before the report is formed.",
+      },
       {
         id: "ai-applicability",
         agentIds: ["09"],
